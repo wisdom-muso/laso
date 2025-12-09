@@ -75,7 +75,9 @@ CSRF_TRUSTED_ORIGINS = [
     'http://65.108.91.110',
     'https://65.108.91.110',
     'http://0.0.0.0:12000',
+    'http://0.0.0.0:12000',
     'http://0.0.0.0:12001',
+    'https://8000-iuswdoqdwn5urwgjqdaob-dcfe9a9e.manusvm.computer',
 ]
 
 # Application definition
