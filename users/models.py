@@ -20,6 +20,26 @@ class User(AbstractUser):
         default='patient',
         verbose_name=_('User Type')
     )
+
+    # SaaS / Multi-Hospital Fields
+    hospital = models.ForeignKey(
+        'core.Hospital',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='users',
+        verbose_name=_('Hospital')
+    )
+    
+    department = models.ForeignKey(
+        'core.Department',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='staff',
+        verbose_name=_('Department'),
+        help_text=_('For detailed staff assignment (e.g. Cardiology)')
+    )
     
     # Additional fields for doctors
     specialization = models.CharField(

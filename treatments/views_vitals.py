@@ -423,3 +423,115 @@ class VitalSignAlertViewSet(viewsets.ModelViewSet):
         alert.save()
         
         return Response({'status': 'acknowledged'})
+
+@login_required
+def realtime_vitals_dashboard(request, patient_id=None):
+    """
+    Real-time vitals dashboard with WebSocket integration
+    """
+    user = request.user
+    
+    if patient_id:
+        # Viewing another patient's vitals (doctors/admins only)
+        if not (user.is_doctor() or user.is_admin_user()):
+            messages.error(request, 'You do not have permission to view this patient\'s vitals.')
+            return redirect('dashboard')
+        
+        try:
+            patient = User.objects.get(id=patient_id, user_type='patient')
+            
+            # Check if doctor has treated this patient
+            if user.is_doctor():
+                from appointments.models import Appointment
+                has_appointment = Appointment.objects.filter(
+                    doctor=user, patient=patient
+                ).exists()
+                
+                if not has_appointment:
+                    messages.error(request, 'You do not have permission to view this patient\'s vitals.')
+                    return redirect('dashboard')
+            
+            is_own_dashboard = False
+        except User.DoesNotExist:
+            messages.error(request, 'Patient not found.')
+            return redirect('dashboard')
+    else:
+        # Viewing own vitals
+        if not user.is_patient():
+            messages.error(request, 'Only patients can view their own vitals dashboard.')
+            return redirect('dashboard')
+        
+        patient = user
+        is_own_dashboard = True
+    
+    # Get latest vitals for initial display
+    latest_vital = VitalSign.objects.filter(patient=patient).first()
+    
+    context = {
+        'patient': patient,
+        'is_own_dashboard': is_own_dashboard,
+        'latest_vital': latest_vital,
+    }
+    
+    return render(request, 'treatments/realtime_vitals_dashboard.html', context)
+
+@login_required
+def realtime_vitals_dashboard(request, patient_id=None):
+    """
+    Real-time vitals dashboard with WebSocket support for live updates
+    """
+    user = request.user
+    
+    if patient_id:
+        # Viewing another patient's vitals (doctors/admins only)
+        if not (user.is_doctor() or user.is_admin_user()):
+            messages.error(request, 'You do not have permission to view this patient\'s vitals.')
+            return redirect('dashboard')
+        
+        try:
+            patient = User.objects.get(id=patient_id, user_type='patient')
+            is_own_dashboard = False
+            
+            # Verify doctor has access to this patient
+            if user.is_doctor():
+                from appointments.models import Appointment
+                has_access = Appointment.objects.filter(
+                    doctor=user,
+                    patient=patient
+                ).exists()
+                
+                if not has_access:
+                    messages.error(request, 'You do not have access to this patient\'s vitals.')
+                    return redirect('dashboard')
+                    
+        except User.DoesNotExist:
+            messages.error(request, 'Patient not found.')
+            return redirect('dashboard')
+    else:
+        # Viewing own vitals
+        if not user.is_patient():
+            messages.error(request, 'Only patients can view their own vitals dashboard.')
+            return redirect('dashboard')
+        
+        patient = user
+        is_own_dashboard = True
+    
+    # Get latest vitals for initial display
+    from treatments.models_vitals import VitalSign
+    latest_vital = VitalSign.objects.filter(patient=patient).order_by('-recorded_at').first()
+    
+    # Get recent vitals history for chart display
+    recent_vitals = VitalSign.objects.filter(
+        patient=patient
+    ).order_by('-recorded_at')[:10]
+    
+    context = {
+        'patient': patient,
+        'is_own_dashboard': is_own_dashboard,
+        'latest_vital': latest_vital,
+        'recent_vitals': recent_vitals,
+        'patient_id': patient.id,
+        'websocket_url': f'ws/vitals/{"doctor/" + str(patient.id) + "/" if not is_own_dashboard else ""}',
+    }
+    
+    return render(request, 'treatments/realtime_vitals_dashboard.html', context)

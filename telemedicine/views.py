@@ -18,7 +18,7 @@ import uuid
 import time
 from datetime import datetime
 
-from .models import TeleMedicineConsultation, TeleMedicineMessage, TeleMedicineSettings, TelemedicineAppointment, VideoSession, TelemedDocument, TelemedPrescription, TelemedNote, DoctorPatientMessage, MessageThread
+from .models import TeleMedicineConsultation, TeleMedicineMessage, TeleMedicineSettings, TelemedicineAppointment, TelemedDocument, TelemedPrescription, TelemedNote, DoctorPatientMessage, MessageThread, VideoSession
 from appointments.models import Appointment
 from core.models_notifications import Notification, NotificationType
 from .forms import TelemedicineAppointmentForm, TelemedDocumentForm, TelemedPrescriptionForm, TelemedNoteForm, AppointmentSearchForm
@@ -72,7 +72,7 @@ class TeleMedicineConsultationDetailView(LoginRequiredMixin, UserPassesTestMixin
     Telemedicine consultation detail
     """
     model = TeleMedicineConsultation
-    template_name = 'telemedicine/consultation_room_webrtc.html'
+    template_name = 'telemedicine/consultation_room.html'
     context_object_name = 'consultation'
     slug_field = 'meeting_id'
     slug_url_kwarg = 'session_id'
@@ -592,45 +592,12 @@ def start_video_session(request, appointment_id):
         messages.warning(request, "This appointment has expired. Please create a new appointment.")
         return redirect('telemedicine:appointment-list')
     
-    # Check if there is an active session
-    active_session = VideoSession.objects.filter(
-        appointment=appointment,
-        end_time__isnull=True
-    ).first()
-    
-    # If not, start a new session
-    if not active_session:
-        active_session = VideoSession.objects.create(
-            appointment=appointment,
-            started_by=request.user,
-            room_name=f"telemed_{appointment.id}_{int(time.time())}"
-        )
-        
-        # Send notification to the other party
-        recipient = appointment.patient if request.user == appointment.doctor else appointment.doctor
-        Notification.objects.create(
-            recipient=recipient,
-            notification_type=NotificationType.APPOINTMENT_REMINDER,
-            title="Session Started",
-            message=f"{request.user.get_full_name()} has started the session. You can join now.",
-            priority="high",
-            extra_data={
-                "appointment_id": appointment.id,
-                "session_id": active_session.id,
-            }
-        )
-    
-    # Redirect to the session page
-    return render(request, 'telemedicine/video_session.html', {
-        'appointment': appointment,
-        'session': active_session,
-        'is_doctor': request.user == appointment.doctor
-    })
+    # Redirect to Jitsi Room
+    return redirect('telemedicine:jitsi-room', appointment_id=appointment.id)
 
 
 @login_required
 def end_video_session(request, session_id):
-    session = get_object_or_404(VideoSession, id=session_id)
     appointment = session.appointment
     
     # Authorization check
@@ -826,147 +793,64 @@ class TeleconsultationAnalyticsView(LoginRequiredMixin, UserPassesTestMixin, Tem
         return context
 
 
-@csrf_exempt
-@require_http_methods(["POST"])
-def webrtc_signal(request, session_id):
-    """
-    WebRTC signaling server (simple)
-    """
-    try:
-        data = json.loads(request.body)
-        # This part should be integrated with a real WebRTC signaling server
-        # For example, a WebSocket server or Redis pub/sub can be used
-        print(f"Received signal for session {session_id}: {data}")
-        return JsonResponse({'status': 'ok'})
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-# Direct Messaging Views
-
 class DoctorMessagingDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    """
-    Doctor messaging dashboard
-    """
-    template_name = 'telemedicine/doctor_messaging_dashboard.html'
+    template_name = 'telemedicine/doctor_messages.html'
     
     def test_func(self):
-        return self.request.user.is_doctor()
+        return hasattr(self.request.user, 'doctor_profile')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        doctor = self.request.user
         
-        # Get message threads
+        # Get message threads for this doctor
         threads = MessageThread.objects.filter(
-            doctor=doctor,
-            is_active=True
-        ).select_related('patient')
+            doctor=self.request.user
+        ).order_by('-last_message_at')
         
-        # Get patients for new conversations
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
-        patients = User.objects.filter(user_type='patient').exclude(
-            id__in=threads.values_list('patient_id', flat=True)
-        )
-        
-        # Get unread message count
-        total_unread = sum(thread.doctor_unread_count for thread in threads)
-        
-        context.update({
-            'threads': threads,
-            'patients': patients,
-            'total_unread': total_unread,
-            'active_consultations': TeleMedicineConsultation.objects.filter(
-                appointment__doctor=doctor,
-                status='in_progress'
-            ).count()
-        })
-        
+        context['threads'] = threads
         return context
 
 
 class PatientMessagingDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    """
-    Patient messaging dashboard
-    """
-    template_name = 'telemedicine/patient_messaging_dashboard.html'
+    template_name = 'telemedicine/patient_messages.html'
     
     def test_func(self):
-        return self.request.user.is_patient()
+        return hasattr(self.request.user, 'patient_profile')
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        patient = self.request.user
         
-        # Get message threads
+        # Get message threads for this patient
         threads = MessageThread.objects.filter(
-            patient=patient,
-            is_active=True
-        ).select_related('doctor')
+            patient=self.request.user
+        ).order_by('-last_message_at')
         
-        # Get unread message count
-        total_unread = sum(thread.patient_unread_count for thread in threads)
-        
-        context.update({
-            'threads': threads,
-            'total_unread': total_unread,
-            'active_consultations': TeleMedicineConsultation.objects.filter(
-                appointment__patient=patient,
-                status='in_progress'
-            ).count()
-        })
-        
+        context['threads'] = threads
         return context
 
 
 class MessageThreadDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
-    """
-    Message thread detail view
-    """
     model = MessageThread
-    template_name = 'telemedicine/message_thread_detail.html'
+    template_name = 'telemedicine/message_thread.html'
     context_object_name = 'thread'
     
     def test_func(self):
         thread = self.get_object()
-        user = self.request.user
-        return user in [thread.doctor, thread.patient]
+        return self.request.user in [thread.doctor, thread.patient]
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        thread = self.get_object()
-        user = self.request.user
         
-        # Get messages
+        # Get messages for this thread
         messages = DoctorPatientMessage.objects.filter(
-            doctor=thread.doctor,
-            patient=thread.patient
+            thread=self.object
         ).order_by('created_at')
         
-        # Mark messages as read
-        unread_messages = messages.filter(is_read=False).exclude(sender=user)
-        for message in unread_messages:
-            message.mark_as_read()
-        
-        # Update thread unread count
-        thread.update_unread_count(user)
-        
-        # Get other participant
-        other_user = thread.patient if user == thread.doctor else thread.doctor
-        
-        context.update({
-            'messages': messages,
-            'other_user': other_user,
-            'can_start_call': True,
-        })
-        
+        context['messages'] = messages
         return context
 
 
-@login_required
+@csrf_exempt
 @require_http_methods(["POST"])
 def send_direct_message(request):
     """
@@ -1175,3 +1059,323 @@ def start_direct_call(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+"""
+Jitsi Meet Integration Views for Telemedicine
+Add these views to your existing telemedicine/views.py or create as separate file
+"""
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponseForbidden
+from django.views.decorators.http import require_http_methods
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+import json
+
+from appointments.models import Appointment
+
+
+@login_required
+def jitsi_telemedicine_room(request, appointment_id):
+    """
+    Jitsi Meet telemedicine room view
+    Only allows access to doctor and patient within valid time window
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can join this call
+    if not appointment.can_user_join_call(request.user):
+        messages.error(request, _('You are not authorized to join this telemedicine session.'))
+        return redirect('dashboard')
+    
+    # Check if call is available
+    is_available, message = appointment.is_available_for_call()
+    
+    context = {
+        'appointment': appointment,
+        'is_available': is_available,
+        'availability_message': message,
+        'jitsi_domain': getattr(settings, 'JITSI_DOMAIN', 'meet.jit.si'),
+        'user_display_name': request.user.get_full_name() or request.user.username,
+        'user_role': 'Doctor' if hasattr(request.user, 'is_doctor') and request.user.is_doctor() else 'Patient',
+    }
+    
+    # If available, generate room name
+    if is_available:
+        context['room_name'] = appointment.get_jitsi_room_name()
+        context['jitsi_config'] = {
+            'roomName': context['room_name'],
+            'width': '100%',
+            'height': '600',
+            'parentNode': 'jitsi-container',
+            'userInfo': {
+                'displayName': context['user_display_name']
+            },
+            'configOverwrite': {
+                'startWithAudioMuted': False,
+                'startWithVideoMuted': False,
+                'enableWelcomePage': False,
+                'prejoinPageEnabled': False,
+                'disableInviteFunctions': True,
+            },
+            'interfaceConfigOverwrite': {
+                'TOOLBAR_BUTTONS': [
+                    'microphone', 'camera', 'closedcaptions', 'desktop',
+                    'fullscreen', 'fodeviceselection', 'hangup', 'profile',
+                    'chat', 'recording', 'livestreaming', 'etherpad',
+                    'sharedvideo', 'settings', 'raisehand', 'videoquality',
+                    'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+                    'tileview', 'videobackgroundblur', 'download', 'help',
+                    'mute-everyone', 'security'
+                ],
+                'SETTINGS_SECTIONS': ['devices', 'language', 'moderator', 'profile', 'calendar'],
+                'SHOW_JITSI_WATERMARK': False,
+                'SHOW_WATERMARK_FOR_GUESTS': False,
+                'SHOW_BRAND_WATERMARK': False,
+                'BRAND_WATERMARK_LINK': '',
+                'SHOW_POWERED_BY': False,
+                'DEFAULT_BACKGROUND': '#474747',
+            }
+        }
+    else:
+        context['time_until_available'] = appointment.time_until_available()
+    
+    return render(request, 'telemedicine/jitsi_room.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_telemedicine(request, appointment_id):
+    """
+    Toggle telemedicine status for an appointment
+    Only doctors can enable/disable telemedicine for appointments
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user is the doctor for this appointment
+    if request.user != appointment.doctor:
+        return JsonResponse({
+            'success': False,
+            'message': 'Only the assigned doctor can modify telemedicine settings.'
+        }, status=403)
+    
+    # Toggle telemedicine status
+    appointment.is_telemedicine = not appointment.is_telemedicine
+    appointment.save(update_fields=['is_telemedicine'])
+    
+    return JsonResponse({
+        'success': True,
+        'is_telemedicine': appointment.is_telemedicine,
+        'message': f'Telemedicine {"enabled" if appointment.is_telemedicine else "disabled"} for this appointment.'
+    })
+
+
+@login_required
+def check_telemedicine_status(request, appointment_id):
+    """
+    AJAX endpoint to check telemedicine availability status
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can join this call
+    if not appointment.can_user_join_call(request.user):
+        return JsonResponse({
+            'success': False,
+            'message': 'Unauthorized access.'
+        }, status=403)
+    
+    is_available, message = appointment.is_available_for_call()
+    
+    return JsonResponse({
+        'success': True,
+        'is_available': is_available,
+        'message': message,
+        'time_until_available': appointment.time_until_available() if not is_available else 0,
+        'room_name': appointment.get_jitsi_room_name() if is_available else None
+    })
+
+
+@login_required
+def appointment_detail_with_telemedicine(request, appointment_id):
+    """
+    Enhanced appointment detail view with telemedicine integration
+    This can replace or extend your existing appointment detail view
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can view this appointment
+    if not (request.user == appointment.doctor or request.user == appointment.patient):
+        messages.error(request, _('You are not authorized to view this appointment.'))
+        return redirect('dashboard')
+    
+    is_available, availability_message = appointment.is_available_for_call()
+    
+    context = {
+        'appointment': appointment,
+        'is_telemedicine_available': is_available,
+        'telemedicine_message': availability_message,
+        'can_toggle_telemedicine': request.user == appointment.doctor,
+        'time_until_available': appointment.time_until_available(),
+    }
+    
+    return render(request, 'appointments/appointment_detail_telemedicine.html', context)
+"""
+Jitsi Meet Integration Views for Telemedicine
+Add these views to your existing telemedicine/views.py or create as separate file
+"""
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse, HttpResponseForbidden
+from django.views.decorators.http import require_http_methods
+from django.conf import settings
+from django.utils.translation import gettext_lazy as _
+import json
+
+from appointments.models import Appointment
+
+
+@login_required
+def jitsi_telemedicine_room(request, appointment_id):
+    """
+    Jitsi Meet telemedicine room view
+    Only allows access to doctor and patient within valid time window
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can join this call
+    if not appointment.can_user_join_call(request.user):
+        messages.error(request, _('You are not authorized to join this telemedicine session.'))
+        return redirect('dashboard')
+    
+    # Check if call is available
+    is_available, message = appointment.is_available_for_call()
+    
+    context = {
+        'appointment': appointment,
+        'is_available': is_available,
+        'availability_message': message,
+        'jitsi_domain': '65.108.91.110:8080',
+        'user_display_name': request.user.get_full_name() or request.user.username,
+        'user_role': 'Doctor' if hasattr(request.user, 'is_doctor') and request.user.is_doctor() else 'Patient',
+    }
+    
+    # If available, generate room name
+    if is_available:
+        context['room_name'] = appointment.get_jitsi_room_name()
+        context['jitsi_config'] = {
+            'roomName': context['room_name'],
+            'width': '100%',
+            'height': '600',
+            'parentNode': 'jitsi-container',
+            'userInfo': {
+                'displayName': context['user_display_name']
+            },
+            'configOverwrite': {
+                'startWithAudioMuted': False,
+                'startWithVideoMuted': False,
+                'enableWelcomePage': False,
+                'prejoinPageEnabled': False,
+                'disableInviteFunctions': True,
+            },
+            'interfaceConfigOverwrite': {
+                'TOOLBAR_BUTTONS': [
+                    'microphone', 'camera', 'closedcaptions', 'desktop',
+                    'fullscreen', 'fodeviceselection', 'hangup', 'profile',
+                    'chat', 'recording', 'livestreaming', 'etherpad',
+                    'sharedvideo', 'settings', 'raisehand', 'videoquality',
+                    'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
+                    'tileview', 'videobackgroundblur', 'download', 'help',
+                    'mute-everyone', 'security'
+                ],
+                'SETTINGS_SECTIONS': ['devices', 'language', 'moderator', 'profile', 'calendar'],
+                'SHOW_JITSI_WATERMARK': False,
+                'SHOW_WATERMARK_FOR_GUESTS': False,
+                'SHOW_BRAND_WATERMARK': False,
+                'BRAND_WATERMARK_LINK': '',
+                'SHOW_POWERED_BY': False,
+                'DEFAULT_BACKGROUND': '#474747',
+            }
+        }
+    else:
+        context['time_until_available'] = appointment.time_until_available()
+    
+    return render(request, 'telemedicine/jitsi_room.html', context)
+
+
+@login_required
+@require_http_methods(["POST"])
+def toggle_telemedicine(request, appointment_id):
+    """
+    Toggle telemedicine status for an appointment
+    Only doctors can enable/disable telemedicine for appointments
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user is the doctor for this appointment
+    if request.user != appointment.doctor:
+        return JsonResponse({
+            'success': False,
+            'message': 'Only the assigned doctor can modify telemedicine settings.'
+        }, status=403)
+    
+    # Toggle telemedicine status
+    appointment.is_telemedicine = not appointment.is_telemedicine
+    appointment.save(update_fields=['is_telemedicine'])
+    
+    return JsonResponse({
+        'success': True,
+        'is_telemedicine': appointment.is_telemedicine,
+        'message': f'Telemedicine {"enabled" if appointment.is_telemedicine else "disabled"} for this appointment.'
+    })
+
+
+@login_required
+def check_telemedicine_status(request, appointment_id):
+    """
+    AJAX endpoint to check telemedicine availability status
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can join this call
+    if not appointment.can_user_join_call(request.user):
+        return JsonResponse({
+            'success': False,
+            'message': 'Unauthorized access.'
+        }, status=403)
+    
+    is_available, message = appointment.is_available_for_call()
+    
+    return JsonResponse({
+        'success': True,
+        'is_available': is_available,
+        'message': message,
+        'time_until_available': appointment.time_until_available() if not is_available else 0,
+        'room_name': appointment.get_jitsi_room_name() if is_available else None
+    })
+
+
+@login_required
+def appointment_detail_with_telemedicine(request, appointment_id):
+    """
+    Enhanced appointment detail view with telemedicine integration
+    This can replace or extend your existing appointment detail view
+    """
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    
+    # Check if user can view this appointment
+    if not (request.user == appointment.doctor or request.user == appointment.patient):
+        messages.error(request, _('You are not authorized to view this appointment.'))
+        return redirect('dashboard')
+    
+    is_available, availability_message = appointment.is_available_for_call()
+    
+    context = {
+        'appointment': appointment,
+        'is_telemedicine_available': is_available,
+        'telemedicine_message': availability_message,
+        'can_toggle_telemedicine': request.user == appointment.doctor,
+        'time_until_available': appointment.time_until_available(),
+    }
+    
+    return render(request, 'appointments/appointment_detail_telemedicine.html', context)

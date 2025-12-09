@@ -1,0 +1,108 @@
+/* Django Unfold Teal Theme Customization */
+
+:root {
+    /* Override Unfold's primary color variables with teal */
+    --primary-50: #f0fdfa;
+    --primary-100: #ccfbf1;
+    --primary-200: #99f6e4;
+    --primary-300: #5eead4;
+    --primary-400: #2dd4bf;
+    --primary-500: #14b8a6;  /* Main teal color */
+    --primary-600: #0d9488;
+    --primary-700: #0f766e;
+    --primary-800: #115e59;
+    --primary-900: #134e4a;
+    --primary-950: #042f2e;
+}
+
+/* Additional teal theme overrides */
+.bg-primary-500 {
+    background-color: var(--primary-500) !important;
+}
+
+.text-primary-500 {
+    color: var(--primary-500) !important;
+}
+
+.border-primary-500 {
+    border-color: var(--primary-500) !important;
+}
+
+/* Admin interface specific overrides */
+.submit-row input[type="submit"] {
+    background-color: var(--primary-500) !important;
+    border-color: var(--primary-500) !important;
+}
+
+.submit-row input[type="submit"]:hover {
+    background-color: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+}
+
+/* Django admin sidebar and navigation */
+#nav-sidebar .current-app .nav-link {
+    background-color: var(--primary-500) !important;
+}
+
+#nav-sidebar .nav-link:hover {
+    background-color: var(--primary-100) !important;
+    color: var(--primary-700) !important;
+}
+
+/* Form field focus states */
+.form-control:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--primary-500) !important;
+    box-shadow: 0 0 0 0.2rem rgba(20, 184, 166, 0.25) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary-500) !important;
+    border-color: var(--primary-500) !important;
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+}
+
+/* Links */
+a {
+    color: var(--primary-600) !important;
+}
+
+a:hover {
+    color: var(--primary-700) !important;
+}
+
+/* Django admin specific elements */
+.module h2, .module caption, .inline-group h2 {
+    background-color: var(--primary-500) !important;
+}
+
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background-color: var(--primary-500) !important;
+    border-color: var(--primary-500) !important;
+}
+
+.button:hover, input[type=submit]:hover, input[type=button]:hover, .submit-row input:hover, a.button:hover {
+    background-color: var(--primary-600) !important;
+    border-color: var(--primary-600) !important;
+}
+
+/* Django admin calendar widget */
+.calendarbox .calendarnav-previous, .calendarbox .calendarnav-next {
+    background-color: var(--primary-500) !important;
+}
+
+/* Django admin breadcrumbs */
+.breadcrumbs a {
+    color: var(--primary-700) !important;
+}
+
+.breadcrumbs a:hover {
+    color: var(--primary-800) !important;
+}

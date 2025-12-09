@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Telemedicine Video Consultation" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .telemedicine-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .appointment-info {
+        background: #f8f9fa;
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .status-badge {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
+    
+    .jitsi-container {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        background: #000;
+        min-height: 600px;
+    }
+    
+    .waiting-message {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+        padding: 1.5rem;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .countdown-timer {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #007bff;
+    }
+    
+    .control-buttons {
+        margin-top: 1rem;
+        text-align: center;
+    }
+    
+    .btn-telemedicine {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 2rem;
+        border-radius: 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-telemedicine:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        color: white;
+    }
+    
+    .participant-info {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="telemedicine-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-0">
+                    <i class="fas fa-video me-2"></i>
+                    {% trans "Telemedicine Video Consultation" %}
+                </h1>
+                <p class="mb-0 mt-2">{% trans "Secure video consultation powered by Jitsi Meet" %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Appointment Information -->
+            <div class="appointment-info">
+                <h5><i class="fas fa-calendar-alt me-2"></i>{% trans "Appointment Details" %}</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>{% trans "Patient" %}:</strong> {{ appointment.patient.get_full_name }}</p>
+                        <p><strong>{% trans "Doctor" %}:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>{% trans "Date" %}:</strong> {{ appointment.date|date:"F d, Y" }}</p>
+                        <p><strong>{% trans "Time" %}:</strong> {{ appointment.time|time:"H:i" }}</p>
+                    </div>
+                </div>
+                {% if appointment.description %}
+                <p><strong>{% trans "Description" %}:</strong> {{ appointment.description }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Video Call Container -->
+            {% if is_available %}
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-video me-2"></i>
+                            {% trans "Video Consultation Active" %}
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="jitsi-container" class="jitsi-container"></div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="waiting-message">
+                    <i class="fas fa-clock fa-3x mb-3 text-warning"></i>
+                    <h4>{% trans "Telemedicine Not Available" %}</h4>
+                    <p class="mb-3">{{ availability_message }}</p>
+                    
+                    {% if time_until_available > 0 %}
+                        <div class="countdown-timer">
+                            <span id="countdown-display">{{ time_until_available }} {% trans "minutes" %}</span>
+                        </div>
+                        <p class="mt-2 text-muted">{% trans "This page will automatically refresh when the consultation becomes available." %}</p>
+                    {% endif %}
+                    
+                    <div class="control-buttons">
+                        <button class="btn btn-secondary" onclick="window.location.reload()">
+                            <i class="fas fa-sync-alt me-2"></i>{% trans "Refresh Status" %}
+                        </button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Participant Information -->
+            <div class="participant-info">
+                <h5><i class="fas fa-user me-2"></i>{% trans "Your Information" %}</h5>
+                <p><strong>{% trans "Name" %}:</strong> {{ user_display_name }}</p>
+                <p><strong>{% trans "Role" %}:</strong> {{ user_role }}</p>
+                {% if is_available %}
+                    <span class="badge bg-success status-badge">
+                        <i class="fas fa-circle me-1"></i>{% trans "Ready to Join" %}
+                    </span>
+                {% else %}
+                    <span class="badge bg-warning status-badge">
+                        <i class="fas fa-clock me-1"></i>{% trans "Waiting" %}
+                    </span>
+                {% endif %}
+            </div>
+
+            <!-- Instructions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>{% trans "Instructions" %}</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% trans "Ensure your camera and microphone are working" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% trans "Use a stable internet connection" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% trans "Find a quiet, private location" %}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            {% trans "Have your medical documents ready" %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Technical Support -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-headset me-2"></i>{% trans "Need Help?" %}</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        {% trans "If you experience technical difficulties, please contact our support team." %}
+                    </p>
+                    <button class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-phone me-2"></i>{% trans "Contact Support" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Jitsi Meet External API -->
+<script src="http://{{ jitsi_domain }}:8080/external_api.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if is_available %}
+        // Initialize Jitsi Meet
+        const jitsiConfig = {{ jitsi_config|safe }};
+        
+        const api = new JitsiMeetExternalAPI('{{ jitsi_domain }}', {
+            roomName: jitsiConfig.roomName,
+            width: jitsiConfig.width,
+            height: jitsiConfig.height,
+            parentNode: document.querySelector('#jitsi-container'),
+            userInfo: jitsiConfig.userInfo,
+            configOverwrite: jitsiConfig.configOverwrite,
+            interfaceConfigOverwrite: jitsiConfig.interfaceConfigOverwrite
+        });
+
+        // Event listeners
+        api.addEventListener('videoConferenceJoined', function(data) {
+            console.log('User joined the conference:', data);
+        });
+
+        api.addEventListener('videoConferenceLeft', function(data) {
+            console.log('User left the conference:', data);
+            // Optionally redirect back to dashboard
+            // window.location.href = "{% url 'dashboard' %}";
+        });
+
+        api.addEventListener('participantJoined', function(data) {
+            console.log('Participant joined:', data);
+        });
+
+        api.addEventListener('participantLeft', function(data) {
+            console.log('Participant left:', data);
+        });
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            if (api) {
+                api.dispose();
+            }
+        });
+
+    {% else %}
+        // Auto-refresh functionality for waiting state
+        {% if time_until_available > 0 %}
+            let timeRemaining = {{ time_until_available }};
+            const countdownDisplay = document.getElementById('countdown-display');
+            
+            const countdownTimer = setInterval(function() {
+                timeRemaining--;
+                if (timeRemaining > 0) {
+                    countdownDisplay.textContent = timeRemaining + ' {% trans "minutes" %}';
+                } else {
+                    clearInterval(countdownTimer);
+                    window.location.reload();
+                }
+            }, 60000); // Update every minute
+
+            // Check status every 30 seconds
+            const statusChecker = setInterval(function() {
+                fetch('{% url "telemedicine:check-telemedicine-status" appointment.id %}')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.is_available) {
+                            clearInterval(statusChecker);
+                            clearInterval(countdownTimer);
+                            window.location.reload();
+                        }
+                    })
+                    .catch(error => console.error('Status check error:', error));
+            }, 30000);
+        {% endif %}
+    {% endif %}
+});
+</script>
+{% endblock %}

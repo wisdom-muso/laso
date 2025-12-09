@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Laso Healthcare - Clinical Patient Tracking and Appointment System{% endblock %}</title>
+
+    <!-- Favicon -->
+    {% load static %}
+    <!-- <link rel="icon" type="image/png" href="{% static 'assets/media/logos/favicon.png' %}"> -->
+
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Template CSS -->
+    <link href="{% static 'assets/plugins/global/plugins.bundle.css' %}" rel="stylesheet" type="text/css" />
+    <link href="{% static 'assets/css/style.bundle.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Theme CSS -->
+    <link href="{% static 'assets/css/theme.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Sidebar Teal CSS -->
+    <link href="{% static 'css/sidebar_teal.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Complete Teal Theme Override -->
+    <link href="{% static 'css/teal_theme_override.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Dark Mode CSS -->
+    <link href="{% static 'css/dark_mode.css' %}" rel="stylesheet" type="text/css" />
+
+    <!-- Custom CSS -->
+    <style>
+        /* Teal Color Theme Override */
+        :root {
+            --bs-primary: #14b8a6;
+            --bs-primary-rgb: 20, 184, 166;
+            --teal-50: #f0fdfa;
+            --teal-100: #ccfbf1;
+            --teal-200: #99f6e4;
+            --teal-300: #5eead4;
+            --teal-400: #2dd4bf;
+            --teal-500: #14b8a6;
+            --teal-600: #0d9488;
+            --teal-700: #0f766e;
+            --teal-800: #115e59;
+            --teal-900: #134e4a;
+        }
+
+        .text-primary {
+            color: var(--teal-500) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--teal-500) !important;
+        }
+
+        .btn-primary {
+            background-color: var(--teal-500);
+            border-color: var(--teal-500);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--teal-600);
+            border-color: var(--teal-600);
+        }
+
+        .btn-primary:focus,
+        .btn-primary.focus {
+            box-shadow: 0 0 0 0.2rem rgba(20, 184, 166, 0.5);
+        }
+
+        .badge-primary {
+            background-color: var(--teal-500);
+        }
+
+        .bg-light-primary {
+            background-color: rgba(20, 184, 166, 0.1) !important;
+        }
+
+        .text-hover-primary:hover {
+            color: var(--teal-600) !important;
+        }
+
+        .btn-active-color-primary:not(.btn-outline):not(.btn-dashed):not(.btn-light):not(.active) {
+            color: var(--teal-500);
+        }
+
+        /* Sidebar specific teal colors */
+        .menu-title {
+            color: var(--teal-700) !important;
+        }
+
+        .menu-link:hover .menu-title {
+            color: var(--teal-500) !important;
+        }
+
+        .menu-link.active .menu-title {
+            color: var(--teal-500) !important;
+        }
+
+        /* Override any blue colors with teal */
+        .text-blue,
+        .link-primary {
+            color: var(--teal-500) !important;
+        }
+
+        /* Sidebar layout */
+        #kt_app_sidebar {
+            z-index: 100;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 225px;
+        }
+
+        /* Main content padding */
+        #kt_app_main {
+            padding-left: 225px;
+            padding-top: 60px;
+        }
+
+        /* Header height adjustment */
+        .app-header {
+            height: 60px !important;
+            min-height: 60px !important;
+        }
+
+        /* Header elements height adjustment */
+        .app-header .app-header-logo,
+        .app-header .app-navbar {
+            height: 60px !important;
+        }
+
+        /* Form elements height adjustment */
+        .search-input.form-control {
+            height: 35px !important;
+        }
+
+        /* Mobile view media query */
+        @media (max-width: 991.98px) {
+            #kt_app_main {
+                padding-left: 0;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body id="kt_app_body" data-kt-app-header-fixed="true" data-kt-app-header-fixed-mobile="true"
+    data-kt-app-sidebar-enabled="true" data-kt-app-sidebar-fixed="true" data-kt-app-sidebar-hoverable="true"
+    data-kt-app-sidebar-push-toolbar="true" data-kt-app-sidebar-push-footer="true" data-kt-app-toolbar-enabled="true"
+    class="app-default">
+
+    <!-- Main App Container -->
+    <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
+        <div class="app-page flex-column flex-column-fluid" id="kt_app_page">
+
+            <!-- Header -->
+            <div id="kt_app_header" class="app-header d-flex flex-column flex-stack">
+                <div class="d-flex align-items-center flex-grow-1">
+                    <div class="app-header-logo d-flex align-items-center ps-lg-5" id="kt_app_header_logo">
+                        <!-- Sidebar Toggle -->
+                        <div id="kt_app_sidebar_toggle"
+                            class="app-sidebar-toggle btn btn-sm btn-icon bg-body btn-color-gray-500 btn-active-color-primary w-25px h-25px ms-n2 me-2 d-none d-lg-flex">
+                            <i class="ki-outline ki-abstract-14 fs-4"></i>
+                        </div>
+                        <!-- Mobile Sidebar Toggle -->
+                        <div class="btn btn-icon btn-active-color-primary w-30px h-30px ms-2 me-1 d-flex d-lg-none"
+                            id="kt_app_sidebar_mobile_toggle">
+                            <i class="ki-outline ki-abstract-14 fs-2"></i>
+                        </div>
+                        <!-- Logo -->
+                        <a href="{% url 'home' %}" class="app-sidebar-logo me-5">
+                            <img src="{% static 'assets/images/logo.png' %}" alt="Laso Healthcare"
+                                style="height: 40px; width: auto;">
+                        </a>
+                    </div>
+
+                    <!-- Navbar -->
+                    <div class="app-navbar flex-grow-1 justify-content-end" id="kt_app_header_navbar">
+                        {% if user.is_authenticated %}
+                        <!-- Notifications Menu -->
+                        <div class="app-navbar-item ms-1 ms-lg-3">
+                            <div class="btn btn-icon btn-custom btn-active-color-primary position-relative w-30px h-30px"
+                                data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
+                                data-kt-menu-placement="bottom-end">
+                                <i class="ki-outline ki-notification-status fs-2"></i>
+                                {% if unread_notifications_count > 0 %}
+                                <span
+                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                    {{ unread_notifications_count }}
+                                    <span class="visually-hidden">unread notifications</span>
+                                </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Notifications Menu -->
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-color fw-semibold py-4 fs-6 w-350px"
+                                data-kt-menu="true">
+                                <div class="menu-item px-3">
+                                    <div class="menu-content d-flex align-items-center px-3">
+                                        <div class="symbol symbol-50px me-3">
+                                            <i class="ki-outline ki-notification-status fs-2x text-primary"></i>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <div class="fw-bold d-flex align-items-center">
+                                                Notifications
+                                                {% if unread_notifications_count > 0 %}
+                                                <span class="badge badge-primary ms-2">{{ unread_notifications_count }}
+                                                    new</span>
+                                                {% endif %}
+                                            </div>
+                                            <a href="{% url 'core:notification-list' %}"
+                                                class="fw-semibold text-muted text-hover-primary fs-7">All your
+                                                notifications</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="separator my-2"></div>
+
+                                {% if recent_notifications %}
+                                <div class="menu-item px-5">
+                                    <div class="menu-content px-5">
+                                        <label class="form-check form-switch form-check-custom form-check-solid">
+                                            <span class="fs-7 fw-bold text-gray-800 me-2">Recent Notifications</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {% for notification in recent_notifications %}
+                                <div class="menu-item px-5 py-2">
+                                    <a href="{% if not notification.is_read %}{% url 'core:mark-notification-read' notification.id %}{% else %}{{ notification.related_url }}{% endif %}"
+                                        class="menu-link px-5 {% if not notification.is_read %}bg-light-primary{% endif %}">
+                                        <span class="menu-title fw-semibold">{{ notification.title }}</span>
+                                        <span class="menu-desc text-gray-600 fs-7 mt-1">{{
+                                            notification.message|truncatechars:60 }}</span>
+                                        <span class="fs-8 text-muted">{{ notification.created_at|date:"d M Y H:i"
+                                            }}</span>
+                                    </a>
+                                </div>
+                                {% endfor %}
+
+                                {% else %}
+                                <div class="menu-item px-5">
+                                    <div class="menu-content px-5 text-center">
+                                        <span class="fs-7 text-gray-600">You have no notifications yet.</span>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="separator my-2"></div>
+
+                                <div class="menu-item px-5">
+                                    <a href="{% url 'core:notification-list' %}" class="menu-link px-5 text-center">
+                                        <span class="menu-title fw-semibold">View All Notifications</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Theme Toggle Button -->
+                        <div class="app-navbar-item ms-1 ms-lg-3">
+                            <div id="theme-toggle" class="theme-toggle">
+                                <i class="fas fa-moon" style="font-size: 1rem;"></i>
+                                <i class="fas fa-sun" style="font-size: 1rem; display: none;"></i>
+                            </div>
+                        </div>
+
+                        <!-- User Menu -->
+                        <div class="app-navbar-item ms-1 ms-lg-3">
+
+                            <div class="btn btn-icon btn-custom btn-active-color-primary w-30px h-30px"
+                                data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent"
+                                data-kt-menu-placement="bottom-end">
+                                <i class="ki-outline ki-user fs-2"></i>
+                            </div>
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-color fw-semibold py-4 fs-6 w-275px"
+                                data-kt-menu="true">
+                                <div class="menu-item px-3">
+                                    <div class="menu-content d-flex align-items-center px-3">
+                                        <div class="symbol symbol-40px me-3">
+                                            <i class="ki-outline ki-user fs-2"></i>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <div class="fw-bold d-flex align-items-center fs-6">{{ user.get_full_name }}
+                                            </div>
+                                            <span class="fw-semibold text-muted fs-8">{{ user.get_user_type_display
+                                                }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="separator my-2"></div>
+                                <div class="menu-item px-5">
+                                    <a href="{% url 'dashboard' %}" class="menu-link px-5">Dashboard</a>
+                                </div>
+                                {% if user.is_patient %}
+                                <div class="menu-item px-5">
+                                    <a href="{% url 'core:patient-detail' user.id %}" class="menu-link px-5">My
+                                        Profile</a>
+                                </div>
+                                {% endif %}
+                                <div class="menu-item px-5">
+                                    <a href="{% url 'core:profile-settings' %}" class="menu-link px-5">Profile
+                                        Settings</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="{% url 'logout' %}" class="menu-link px-5">Logout</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="app-navbar-item ms-1 ms-lg-3">
+                            <a href="{% url 'login' %}" class="btn btn-sm btn-primary">Login</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true"
+                data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}"
+                data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start"
+                data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
+                <!-- Sidebar Menu -->
+                <div class="app-sidebar-menu overflow-hidden flex-column-fluid">
+                    <div id="kt_app_sidebar_menu_wrapper" class="app-sidebar-wrapper hover-scroll-overlay-y my-5"
+                        data-kt-scroll="true">
+                        <div class="menu menu-column menu-rounded menu-sub-indention px-3" id="#kt_app_sidebar_menu">
+                            <!-- Dashboard -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'dashboard' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-home-2 fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Dashboard</span>
+                                </a>
+                            </div>
+
+                            {% if user.is_authenticated %}
+
+                            <!-- Patients -->
+                            {% if user.is_doctor or user.is_receptionist or user.is_admin_user %}
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:patient-list' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-profile-user fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Patients</span>
+                                </a>
+                            </div>
+                            {% endif %}
+
+                            <!-- Doctors -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:doctor-list' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-abstract-26 fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Doctors</span>
+                                </a>
+                            </div>
+
+                            <!-- Appointments -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:appointment-list' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-calendar fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Appointments</span>
+                                </a>
+                            </div>
+
+                            <!-- Appointment Calendar -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'appointment-calendar' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-calendar-8 fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Appointment Calendar</span>
+                                </a>
+                            </div>
+
+                            <!-- Telemedicine -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'telemedicine:list' %}">
+                                    <span class="menu-icon">
+                                        <i class="fas fa-video fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Telemedicine</span>
+                                </a>
+                            </div>
+
+                            <!-- Analytics Dashboard -->
+                            {% if user.is_doctor or user.is_admin_user %}
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:analytics_dashboard' %}">
+                                    <span class="menu-icon">
+                                        <i class="fas fa-chart-line fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Analytics</span>
+                                </a>
+                            </div>
+                            {% endif %}
+
+                            <!-- AI Health Assistant -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:ai_assistant' %}">
+                                    <span class="menu-icon">
+                                        <i class="fas fa-brain fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">AI Assistant</span>
+                                </a>
+                            </div>
+
+                            <!-- Medications -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'medication_list' %}">
+                                    <span class="menu-icon">
+                                        <i class="fas fa-pills fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Medications</span>
+                                </a>
+                            </div>
+
+                            <!-- Reports -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'report-list' %}">
+                                    <span class="menu-icon">
+                                        <i class="fas fa-file-medical-alt fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Reports</span>
+                                </a>
+                            </div>
+
+                            <!-- Notifications -->
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:notification-list' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-notification-status fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Notifications</span>
+                                    {% if unread_notifications_count > 0 %}
+                                    <span class="menu-badge">
+                                        <span class="badge badge-circle badge-danger">{{ unread_notifications_count
+                                            }}</span>
+                                    </span>
+                                    {% endif %}
+                                </a>
+                            </div>
+
+                            <!-- New Appointment -->
+                            {% if user.is_doctor or user.is_receptionist or user.is_admin_user %}
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:appointment-create' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-plus fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">New Appointment</span>
+                                </a>
+                            </div>
+                            {% endif %}
+
+                            <!-- Patient Registration -->
+                            {% if user.is_receptionist or user.is_admin_user %}
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:patient-register' %}">
+                                    <span class="menu-icon">
+                                        <i class="ki-outline ki-user-add fs-2"></i>
+                                    </span>
+                                    <span class="menu-title">Patient Registration</span>
+                                </a>
+                            </div>
+                            {% endif %}
+
+                            {% endif %}
+
+                            <!-- Hospital Operations (New) -->
+                            {% if user.is_doctor or user.is_receptionist or user.is_admin_user %}
+                            <div class="menu-item">
+                                <div class="menu-content pb-2">
+                                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Hospital Ops</span>
+                                </div>
+                            </div>
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:saas-onboard-patient' %}">
+                                    <span class="menu-icon"><i class="fas fa-user-plus fs-2"></i></span>
+                                    <span class="menu-title">Onboard Patient</span>
+                                </a>
+                            </div>
+                            <div class="menu-item">
+                                <a class="menu-link" href="{% url 'core:bed-dashboard' %}">
+                                    <span class="menu-icon"><i class="fas fa-bed fs-2"></i></span>
+                                    <span class="menu-title">Bed Management</span>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+                <div class="d-flex flex-column flex-column-fluid">
+
+                    <!-- Content Container -->
+                    <div id="kt_app_content" class="app-content flex-column-fluid">
+                        <div id="kt_app_content_container" class="app-container container-fluid">
+
+                            <!-- Flash Messages -->
+                            {% if messages %}
+                            <div class="messages">
+                                {% for message in messages %}
+                                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                                    role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+
+                            <!-- Main Content Block -->
+                            {% block content %}{% endblock %}
+
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div id="kt_app_footer" class="app-footer">
+                        <div
+                            class="app-container container-fluid d-flex flex-column flex-md-row flex-center flex-md-stack py-3">
+                            <div class="text-gray-900 order-2 order-md-1">
+                                <span class="text-muted fw-semibold me-1">2025 &copy;</span>
+                                <a href="{% url 'home' %}" class="text-gray-800 text-hover-primary">Laso Digital
+                                    Health</a>
+                                <span class="text-muted fw-semibold ms-2">All rights reserved</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'assets/plugins/global/plugins.bundle.js' %}"></script>
+    <script src="{% static 'assets/js/scripts.bundle.js' %}"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="{% static 'assets/js/theme.js' %}"></script>
+
+    <!-- Dark Mode JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const themeToggle = document.getElementById('theme-toggle');
+            const moonIcon = themeToggle.querySelector('.fa-moon');
+            const sunIcon = themeToggle.querySelector('.fa-sun');
+            const body = document.body;
+
+            // Get current theme from localStorage or default to light
+            const currentTheme = localStorage.getItem('theme') || 'light';
+
+            // Apply current theme
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-bs-theme', 'dark');
+                moonIcon.style.display = 'none';
+                sunIcon.style.display = 'inline';
+            } else {
+                body.setAttribute('data-bs-theme', 'light');
+                moonIcon.style.display = 'inline';
+                sunIcon.style.display = 'none';
+            }
+
+            // Theme toggle functionality
+            themeToggle.addEventListener('click', function () {
+                const currentTheme = body.getAttribute('data-bs-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+                body.setAttribute('data-bs-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+
+                if (newTheme === 'dark') {
+                    moonIcon.style.display = 'none';
+                    sunIcon.style.display = 'inline';
+                } else {
+                    moonIcon.style.display = 'inline';
+                    sunIcon.style.display = 'none';
+                }
+
+                // Optional: Send theme preference to server
+                fetch('{% url "toggle-theme" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        dark_mode: newTheme === 'dark'
+                    })
+                }).catch(error => {
+                    console.log('Theme preference not saved to server:', error);
+                });
+            });
+        });
+    </script>
+
+    <!-- Custom JavaScript -->
+    {% block extra_js %}{% endblock %}
+</body>
+
+</html>

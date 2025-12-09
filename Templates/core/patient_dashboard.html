@@ -11,26 +11,26 @@
         box-shadow: 0 0.5rem 1.5rem 0.5rem rgba(0, 0, 0, 0.075);
         border-radius: 0.75rem;
     }
-    
+
     .patient-dashboard .card-header {
         background: transparent;
         border-bottom: 1px solid #e4e6ef;
         padding: 1.5rem 1.5rem 1rem 1.5rem;
     }
-    
+
     .patient-dashboard .card-body {
         padding: 1.5rem;
     }
-    
+
     .patient-dashboard .info-card {
         background: linear-gradient(135deg, var(--teal-50), var(--teal-100));
         border: 1px solid var(--teal-200);
     }
-    
+
     .patient-dashboard .info-card .info-icon {
         color: var(--teal-500);
     }
-    
+
     .patient-dashboard .table th {
         color: var(--teal-700);
         font-weight: 600;
@@ -38,34 +38,48 @@
         font-size: 0.75rem;
         letter-spacing: 0.5px;
     }
-    
+
     .patient-dashboard .btn-primary {
         background-color: var(--teal-500);
         border-color: var(--teal-500);
     }
-    
+
     .patient-dashboard .btn-primary:hover {
         background-color: var(--teal-600);
         border-color: var(--teal-600);
     }
-    
+
     .patient-dashboard .text-primary {
         color: var(--teal-500) !important;
     }
-    
+
     .patient-dashboard .badge-light-primary {
         background-color: rgba(20, 184, 166, 0.1);
         color: var(--teal-700);
     }
-    
+
     .patient-dashboard .badge-light-success {
         background-color: rgba(34, 197, 94, 0.1);
         color: #15803d;
     }
-    
+
     .patient-dashboard .badge-light-danger {
         background-color: rgba(239, 68, 68, 0.1);
         color: #dc2626;
+    }
+
+    .vital-card {
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .vital-card:hover {
+        transform: translateY(-2px);
+    }
+
+    .no-data-message {
+        text-align: center;
+        padding: 2rem;
+        color: #6c757d;
     }
 </style>
 {% endblock %}
@@ -99,590 +113,397 @@
                                     <!-- Join Date -->
                                     <div class="info-card border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                         <div class="d-flex align-items-center">
-                                            <i class="ki-outline ki-calendar fs-1 me-2 info-icon"></i>
-                                            <div class="fs-4 fw-bold">{{ user.date_joined|date:"d M Y" }}</div>
+                                            <i class="ki-outline ki-calendar fs-3 text-success me-2"></i>
+                                            <div class="fs-2 fw-bold text-gray-900">{{ user.date_joined|date:"M Y" }}</div>
                                         </div>
-                                        <div class="fw-semibold fs-6 text-gray-500">Join Date</div>
+                                        <div class="fw-semibold fs-6 text-gray-500">Member Since</div>
                                     </div>
-                                    
-                                    <!-- Birth Date -->
-                                    {% if user.date_of_birth %}
+                                    <!-- Email -->
                                     <div class="info-card border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
                                         <div class="d-flex align-items-center">
-                                            <i class="ki-outline ki-profile-circle fs-1 me-2 info-icon"></i>
-                                            <div class="fs-4 fw-bold">{{ user.date_of_birth|date:"d M Y" }}</div>
+                                            <i class="ki-outline ki-sms fs-3 text-primary me-2"></i>
+                                            <div class="fs-6 fw-bold text-gray-900">{{ user.email }}</div>
                                         </div>
-                                        <div class="fw-semibold fs-6 text-gray-500">Date of Birth</div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    <!-- Blood Type -->
-                                    {% if user.blood_type %}
-                                    <div class="info-card border border-gray-300 border-dashed rounded min-w-125px py-3 px-4 me-6 mb-3">
-                                        <div class="d-flex align-items-center">
-                                            <i class="ki-outline ki-heart fs-1 me-2 text-danger"></i>
-                                            <div class="fs-4 fw-bold">{{ user.blood_type }}</div>
-                                        </div>
-                                        <div class="fw-semibold fs-6 text-gray-500">Blood Type</div>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="separator mb-5"></div>
-                    
-                    <!-- Telemedicine Section -->
-                    <div class="card mb-5 mb-xl-10">
-                        <div class="card-header border-0">
-                            <div class="card-title m-0">
-                                <h3 class="fw-bold m-0 text-primary">
-                                    <i class="fas fa-video me-2"></i>
-                                    Telemedicine
-                                </h3>
-                            </div>
-                            <div class="card-toolbar">
-                                <a href="{% url 'telemedicine:patient-messages' %}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-comments me-1"></i>
-                                    My Messages
-                                    {% comment %}
-                                    {% if unread_messages_count > 0 %}
-                                    <span class="badge badge-light-danger ms-2">{{ unread_messages_count }}</span>
-                                    {% endif %}
-                                    {% endcomment %}
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div class="card-body pt-0">
-                            <div class="row g-6 g-xl-9">
-                                <!-- Messages -->
-                                <div class="col-md-6 col-xl-4">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-envelope info-icon fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ total_unread_messages|default:0 }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Unread Messages</span>
-                                            </div>
-                                        </div>
-                                        <div class="card-body pt-2 pb-4">
-                                            <div class="d-flex flex-column">
-                                                <div class="d-flex fw-semibold align-items-center mb-3">
-                                                    <div class="bullet w-8px h-3px rounded-2 bg-success me-3"></div>
-                                                    <div class="text-gray-500 flex-1 fs-6">Active Conversations</div>
-                                                    <div class="fw-bolder text-gray-700 text-xxl-end">
-                                                        {{ message_threads.count|default:0 }}
-                                                    </div>
-                                                </div>
-                                                <a href="{% url 'telemedicine:patient-messages' %}" class="btn btn-sm btn-light-primary">
-                                                    <i class="fas fa-comments me-2"></i>View Messages
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Consultations -->
-                                <div class="col-md-6 col-xl-4">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-video info-icon fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ active_consultations|default:0 }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Upcoming Consultations</span>
-                                            </div>
-                                        </div>
-                                        <div class="card-body pt-2 pb-4">
-                                            <div class="d-flex flex-column">
-                                                <div class="d-flex fw-semibold align-items-center mb-3">
-                                                    <div class="bullet w-8px h-3px rounded-2 bg-primary me-3"></div>
-                                                    <div class="text-gray-500 flex-1 fs-6">This Week</div>
-                                                    <div class="fw-bolder text-gray-700 text-xxl-end">
-                                                        {{ active_consultations|default:0 }}
-                                                    </div>
-                                                </div>
-                                                <a href="{% url 'telemedicine:list' %}" class="btn btn-sm btn-light-success">
-                                                    <i class="fas fa-video me-2"></i>View Consultations
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Health Status -->
-                                <div class="col-md-6 col-xl-4">
-                                    <div class="card card-flush h-md-50 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Quick Actions</span>
-                                            </div>
-                                        </div>
-                                        <div class="card-body pt-2 pb-4">
-                                            <div class="d-flex flex-column">
-                                                <a href="{% url 'telemedicine:patient-messages' %}" class="btn btn-light-primary btn-sm mb-3">
-                                                    <i class="fas fa-comments me-2"></i>Message Doctor
-                                                </a>
-                                                <a href="{% url 'telemedicine:schedule' %}" class="btn btn-light-success btn-sm mb-3">
-                                                    <i class="fas fa-calendar-plus me-2"></i>Book Consultation
-                                                </a>
-                                                <a href="{% url 'telemedicine:list' %}" class="btn btn-light-info btn-sm">
-                                                    <i class="fas fa-history me-2"></i>My History
-                                                </a>
-                                            </div>
-                                        </div>
+                                        <div class="fw-semibold fs-6 text-gray-500">Email Address</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Enhanced Vitals Section -->
-                    {% if latest_vital %}
-                    <div class="card mb-5 mb-xl-10">
-                        <div class="card-header border-0">
-                            <div class="card-title m-0">
-                                <h3 class="fw-bold m-0 text-primary">
-                                    <i class="fas fa-heartbeat me-2"></i>
-                                    My Health Vitals
-                                </h3>
-                            </div>
-                            <div class="card-toolbar">
-                                <a href="{% url 'core:enhanced-vitals' %}" class="btn btn-sm btn-success me-2">
-                                    <i class="fas fa-chart-area me-1"></i>
-                                    Enhanced View
-                                </a>
-                                <a href="{% url 'vitals:list' %}" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-chart-line me-1"></i>
-                                    View All Vitals
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div class="card-body pt-0">
-                            <!-- Latest Health Assessment - Matching uploaded design -->
-                            <div class="card mb-6" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; position: relative;">
-                                <div class="card-body p-6">
-                                    <!-- Header with shield icon and title -->
-                                    <div class="d-flex align-items-center justify-content-between mb-4">
-                                        <div class="d-flex align-items-center">
-                                            <div class="me-3">
-                                                <i class="fas fa-shield-alt" style="font-size: 2.5rem; color: #20c997;"></i>
-                                            </div>
-                                            <div>
-                                                <h4 class="mb-1 fw-bold text-dark">Latest Health Assessment</h4>
-                                                <p class="text-muted mb-0 fs-6">
-                                                    {{ vitals_enhanced_data.assessment_date|default:latest_vital.recorded_at|date:"F j, Y" }} • Cardiovascular Risk Assessment
-                                                </p>
-                                            </div>
-                                        </div>
-                                        <div class="d-flex align-items-center">
-                                            <!-- Low Risk Badge -->
-                                            <span class="badge me-3" style="background-color: #d1e7dd; color: #0f5132; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: 600;">
-                                                {% if vitals_enhanced_data.risk_level == 'low' %}Low Risk{% else %}{{ vitals_enhanced_data.risk_level|title }} Risk{% endif %}
-                                            </span>
-                                            <!-- Percentage with arrow -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <!-- Upcoming Appointments -->
+        <div class="col-xl-6">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0 text-primary">
+                            <i class="fas fa-calendar-alt me-2"></i>
+                            Upcoming Appointments
+                        </h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <a href="{% url 'appointments:schedule' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-2"></i>Schedule New
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    {% if upcoming_appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
+                                <thead>
+                                    <tr class="fw-bold text-muted">
+                                        <th class="min-w-150px">Date & Time</th>
+                                        <th class="min-w-140px">Doctor</th>
+                                        <th class="min-w-120px">Type</th>
+                                        <th class="min-w-100px text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in upcoming_appointments %}
+                                    <tr>
+                                        <td>
                                             <div class="d-flex align-items-center">
-                                                <i class="fas fa-arrow-up me-2" style="color: #20c997; font-size: 1.2rem; transform: rotate(-45deg);"></i>
-                                                <span style="font-size: 2rem; font-weight: 700; color: #20c997;">{{ vitals_enhanced_data.risk_percentage|default:"23" }}%</span>
+                                                <div class="d-flex justify-content-start flex-column">
+                                                    <span class="text-gray-900 fw-bold text-hover-primary fs-6">{{ appointment.date|date:"M d, Y" }}</span>
+                                                    <span class="text-muted fw-semibold text-muted d-block fs-7">{{ appointment.time|time:"H:i" }}</span>
+                                                </div>
                                             </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-gray-900 fw-bold d-block fs-6">{{ appointment.doctor.get_full_name }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-light-primary fs-7 fw-semibold">{{ appointment.appointment_type }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-end flex-shrink-0">
+                                                <a href="{% url 'appointments:detail' appointment.id %}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
+                                                    <i class="ki-outline ki-eye fs-3"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="no-data-message">
+                            <i class="fas fa-calendar-times fs-3x text-muted mb-3"></i>
+                            <p class="fs-6 text-muted">No upcoming appointments scheduled.</p>
+                            <a href="{% url 'appointments:schedule' %}" class="btn btn-primary btn-sm">Schedule Your First Appointment</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Treatments -->
+        <div class="col-xl-6">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0 text-primary">
+                            <i class="fas fa-stethoscope me-2"></i>
+                            Recent Treatments
+                        </h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <a href="{% url 'treatments:list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    {% if recent_treatments %}
+                        <div class="table-responsive">
+                            <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
+                                <thead>
+                                    <tr class="fw-bold text-muted">
+                                        <th class="min-w-150px">Date</th>
+                                        <th class="min-w-140px">Treatment</th>
+                                        <th class="min-w-120px">Doctor</th>
+                                        <th class="min-w-100px text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for treatment in recent_treatments %}
+                                    <tr>
+                                        <td>
+                                            <span class="text-gray-900 fw-bold d-block fs-6">{{ treatment.created_at|date:"M d, Y" }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-gray-900 fw-bold d-block fs-6">{{ treatment.treatment_type }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-gray-900 fw-bold d-block fs-6">{{ treatment.appointment.doctor.get_full_name }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex justify-content-end flex-shrink-0">
+                                                <a href="{% url 'treatments:detail' treatment.id %}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1">
+                                                    <i class="ki-outline ki-eye fs-3"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="no-data-message">
+                            <i class="fas fa-stethoscope fs-3x text-muted mb-3"></i>
+                            <p class="fs-6 text-muted">No recent treatments found.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Vitals Section -->
+    {% if latest_vital %}
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <div class="col-12">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0 text-primary">
+                            <i class="fas fa-heartbeat me-2"></i>
+                            My Health Vitals
+                        </h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <a href="{% url 'treatments:vitals:realtime_dashboard' %}" class="btn btn-sm btn-success me-2" target="_blank">
+                            <i class="fas fa-chart-line me-2"></i>Real-time Dashboard
+                        </a>
+                        <a href="{% url 'treatments:vitals:list' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-list me-2"></i>View All Records
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3">
+                                <i class="fas fa-heartbeat" style="font-size: 2.5rem; color: #20c997;"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 fw-bold text-dark">Latest Vitals Reading</h4>
+                                <p class="text-muted mb-0 fs-6">
+                                    Recorded on {{ latest_vital.recorded_at|date:"F j, Y \a\t H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Current Vitals Grid -->
+                    <div class="row g-6 g-xl-9">
+                        <!-- Blood Pressure -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card vital-card">
+                                <div class="card-header pt-5">
+                                    <div class="card-title d-flex flex-column">
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
+                                                <i class="fas fa-heartbeat text-primary fs-2 me-2"></i>
+                                            </span>
+                                            <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                                                {{ latest_vital.systolic_bp }}/{{ latest_vital.diastolic_bp }}
+                                            </span>
                                         </div>
+                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Blood Pressure (mmHg)</span>
                                     </div>
-                                    
-                                    <!-- Health Assessment Message -->
-                                    <p class="text-dark mb-4 fs-6" style="line-height: 1.6;">
-                                        {{ vitals_enhanced_data.health_assessment_message|default:"Your blood pressure and cholesterol levels are within normal range. Continue with your current lifestyle and medication." }}
-                                    </p>
-                                    
-                                    <!-- Your Current Vitals Header -->
-                                    <h5 class="text-dark fw-bold mb-4">Your Current Vitals</h5>
                                 </div>
                             </div>
-                            
-                            <!-- Current Vitals Grid -->
-                            <div class="row g-6 g-xl-9">
-                                <!-- Blood Pressure -->
-                                <div class="col-md-6 col-xl-3">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-heartbeat text-primary fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ latest_vital.blood_pressure_display }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Blood Pressure (mmHg)</span>
-                                            </div>
+                        </div>
+                        
+                        <!-- Heart Rate -->
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card vital-card">
+                                <div class="card-header pt-5">
+                                    <div class="card-title d-flex flex-column">
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
+                                                <i class="fas fa-heart text-danger fs-2 me-2"></i>
+                                            </span>
+                                            <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                                                {{ latest_vital.heart_rate }}
+                                            </span>
                                         </div>
+                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Heart Rate (bpm)</span>
                                     </div>
                                 </div>
-                                
-                                <!-- Heart Rate -->
-                                <div class="col-md-6 col-xl-3">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-heart text-danger fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ latest_vital.heart_rate }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Heart Rate (bpm)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Cholesterol -->
-                                {% if latest_vital.cholesterol_total %}
-                                <div class="col-md-6 col-xl-3">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-tint text-purple fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ latest_vital.cholesterol_total }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Cholesterol (mg/dL)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                
-                                <!-- Blood Glucose -->
-                                {% if latest_vital.blood_glucose %}
-                                <div class="col-md-6 col-xl-3">
-                                    <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
-                                        <div class="card-header pt-5">
-                                            <div class="card-title d-flex flex-column">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
-                                                        <i class="fas fa-bolt text-success fs-2 me-2"></i>
-                                                    </span>
-                                                    <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
-                                                        {{ latest_vital.blood_glucose }}
-                                                    </span>
-                                                </div>
-                                                <span class="text-gray-500 pt-1 fw-semibold fs-6">Blood Glucose (mg/dL)</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                {% endif %}
                             </div>
-                            
-                            <!-- Active Alerts -->
-                            {% if active_alerts %}
-                            <div class="alert alert-warning">
-                                <h6><i class="fas fa-exclamation-triangle me-2"></i>Active Health Alerts</h6>
-                                {% for alert in active_alerts %}
-                                <div class="mb-2">
-                                    <strong>{{ alert.get_alert_type_display }}:</strong> {{ alert.message }}
-                                    <small class="text-muted">({{ alert.created_at|timesince }} ago)</small>
+                        </div>
+                        
+                        <!-- Temperature -->
+                        {% if latest_vital.temperature %}
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card vital-card">
+                                <div class="card-header pt-5">
+                                    <div class="card-title d-flex flex-column">
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
+                                                <i class="fas fa-thermometer-half text-warning fs-2 me-2"></i>
+                                            </span>
+                                            <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                                                {{ latest_vital.temperature }}°C
+                                            </span>
+                                        </div>
+                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Temperature</span>
+                                    </div>
                                 </div>
-                                {% endfor %}
                             </div>
-                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Oxygen Saturation -->
+                        {% if latest_vital.oxygen_saturation %}
+                        <div class="col-md-6 col-xl-3">
+                            <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card vital-card">
+                                <div class="card-header pt-5">
+                                    <div class="card-title d-flex flex-column">
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
+                                                <i class="fas fa-lungs text-info fs-2 me-2"></i>
+                                            </span>
+                                            <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                                                {{ latest_vital.oxygen_saturation }}%
+                                            </span>
+                                        </div>
+                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Oxygen Saturation</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Active Alerts -->
+                    {% if active_alerts %}
+                    <div class="alert alert-warning mt-4">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Health Alerts</h6>
+                                <p class="mb-0">You have {{ active_alerts.count }} active health alert{{ active_alerts.count|pluralize }}.</p>
+                            </div>
                         </div>
                     </div>
                     {% endif %}
-                    
-                    <!-- Upcoming Appointments -->
-                    <div class="card mb-5 mb-xl-10">
-                        <div class="card-header border-0">
-                            <div class="card-title m-0">
-                                <h3 class="fw-bold m-0 text-primary">
-                                    <i class="ki-outline ki-calendar-add me-2"></i>
-                                    Upcoming Appointments
-                                </h3>
-                            </div>
-                            <div class="card-toolbar">
-                                <a href="{% url 'core:appointment-list' %}" class="btn btn-sm btn-primary">
-                                    <i class="ki-outline ki-calendar me-1"></i>
-                                    All Appointments
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div class="card-body pt-0">
-                            {% if upcoming_appointments %}
-                            <div class="table-responsive">
-                                <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-                                    <thead>
-                                        <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">Doctor</th>
-                                            <th class="min-w-140px">Date</th>
-                                            <th class="min-w-120px">Time</th>
-                                            <th class="min-w-100px">Status</th>
-                                            <th class="min-w-100px text-end">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for appointment in upcoming_appointments %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-45px me-5">
-                                                        <div class="symbol-label bg-light-primary">
-                                                            <i class="ki-outline ki-abstract-26 fs-3 text-primary"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex justify-content-start flex-column">
-                                                        <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{ appointment.doctor.get_full_name }}</a>
-                                                        <span class="text-muted fw-semibold d-block fs-7">
-                                                            {% if appointment.doctor.specialization %}
-                                                                {{ appointment.doctor.specialization }}
-                                                            {% else %}
-                                                                General Practitioner
-                                                            {% endif %}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="text-gray-900 fw-semibold d-block fs-6">{{ appointment.date|date:"M d, Y" }}</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-gray-900 fw-semibold d-block fs-6">{{ appointment.time|time:"g:i A" }}</span>
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-light-{% if appointment.status == 'planned' %}primary{% elif appointment.status == 'completed' %}success{% else %}danger{% endif %}">
-                                                    {% if appointment.status == 'planned' %}
-                                                        Scheduled
-                                                    {% elif appointment.status == 'completed' %}
-                                                        Completed
-                                                    {% elif appointment.status == 'cancelled' %}
-                                                        Cancelled
-                                                    {% else %}
-                                                        {{ appointment.get_status_display }}
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                            <td class="text-end">
-                                                <a href="{% url 'core:appointment-detail' appointment.id %}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" title="View Details">
-                                                    <i class="ki-outline ki-eye fs-2"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <div class="text-center py-10">
-                                <div class="symbol symbol-100px mx-auto mb-5">
-                                    <div class="symbol-label bg-light-primary">
-                                        <i class="ki-outline ki-calendar-tick fs-4x text-primary"></i>
-                                    </div>
-                                </div>
-                                <h5 class="text-gray-900 fw-bold mb-2">No Upcoming Appointments</h5>
-                                <div class="text-muted fw-semibold fs-6 mb-5">You don't have any upcoming appointments scheduled.</div>
-                                <a href="{% url 'core:appointment-create' %}" class="btn btn-primary">
-                                    <i class="ki-outline ki-plus me-1"></i>
-                                    Schedule New Appointment
-                                </a>
-                            </div>
-                            {% endif %}
-                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- No Vitals Data -->
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <div class="col-12">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0 text-primary">
+                            <i class="fas fa-heartbeat me-2"></i>
+                            My Health Vitals
+                        </h3>
                     </div>
-                    
-                    <!-- Recent Treatments -->
-                    <div class="card mb-5 mb-xl-10">
-                        <div class="card-header border-0">
-                            <div class="card-title m-0">
-                                <h3 class="fw-bold m-0 text-primary">
-                                    <i class="ki-outline ki-document me-2"></i>
-                                    Recent Treatments
-                                </h3>
-                            </div>
-                            <div class="card-toolbar">
-                                <a href="{% url 'core:patient-detail' user.id %}" class="btn btn-sm btn-light-primary">
-                                    <i class="ki-outline ki-notepad-bookmark me-1"></i>
-                                    View Medical History
-                                </a>
-                            </div>
-                        </div>
-                        
-                        <div class="card-body pt-0">
-                            {% if recent_treatments %}
-                            <div class="table-responsive">
-                                <table class="table table-row-dashed table-row-gray-300 align-middle gs-0 gy-4">
-                                    <thead>
-                                        <tr class="fw-bold text-muted">
-                                            <th class="min-w-150px">Doctor</th>
-                                            <th class="min-w-140px">Date</th>
-                                            <th class="min-w-120px">Diagnosis</th>
-                                            <th class="min-w-100px text-end">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for treatment in recent_treatments %}
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="symbol symbol-45px me-5">
-                                                        <div class="symbol-label bg-light-success">
-                                                            <i class="ki-outline ki-abstract-26 fs-3 text-success"></i>
-                                                        </div>
-                                                    </div>
-                                                    <div class="d-flex justify-content-start flex-column">
-                                                        <a href="#" class="text-gray-900 fw-bold text-hover-primary fs-6">{{ treatment.appointment.doctor.get_full_name }}</a>
-                                                        <span class="text-muted fw-semibold d-block fs-7">
-                                                            {% if treatment.appointment.doctor.specialization %}
-                                                                {{ treatment.appointment.doctor.specialization }}
-                                                            {% else %}
-                                                                General Practitioner
-                                                            {% endif %}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="text-gray-900 fw-semibold d-block fs-6">{{ treatment.appointment.date|date:"M d, Y" }}</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-gray-900 fw-semibold d-block fs-6">
-                                                    {% if treatment.diagnosis %}
-                                                        {{ treatment.diagnosis|truncatechars:50 }}
-                                                    {% else %}
-                                                        General Consultation
-                                                    {% endif %}
-                                                </span>
-                                            </td>
-                                            <td class="text-end">
-                                                <a href="{% url 'core:treatment-detail' treatment.id %}" class="btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1" title="View Treatment Details">
-                                                    <i class="ki-outline ki-eye fs-2"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                            </div>
-                            {% else %}
-                            <div class="text-center py-10">
-                                <div class="symbol symbol-100px mx-auto mb-5">
-                                    <div class="symbol-label bg-light-success">
-                                        <i class="ki-outline ki-document fs-4x text-success"></i>
-                                    </div>
-                                </div>
-                                <h5 class="text-gray-900 fw-bold mb-2">No Treatment History</h5>
-                                <div class="text-muted fw-semibold fs-6 mb-5">You don't have any treatment records yet.</div>
-                                <p class="text-muted fs-7">Your treatment history will appear here after your appointments are completed.</p>
-                            </div>
-                            {% endif %}
-                        </div>
+                    <div class="card-toolbar">
+                        <a href="{% url 'treatments:vitals:add' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add Vitals
+                        </a>
                     </div>
-                    
-                    <!-- Quick Actions -->
-                    <div class="row g-6 g-xl-9 mb-6">
-                        <div class="col-md-6 col-xl-4">
-                            <div class="card card-flush h-xl-100">
+                </div>
+                <div class="card-body pt-0">
+                    <div class="no-data-message">
+                        <i class="fas fa-heartbeat fs-3x text-muted mb-3"></i>
+                        <p class="fs-6 text-muted">No vitals data recorded yet.</p>
+                        <p class="fs-7 text-muted mb-4">Start tracking your health by recording your first vitals reading.</p>
+                        <a href="{% url 'treatments:vitals:add' %}" class="btn btn-primary btn-sm">Record First Reading</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Telemedicine Section -->
+    <div class="row g-5 g-xl-10 mb-5 mb-xl-10">
+        <div class="col-12">
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-header border-0">
+                    <div class="card-title m-0">
+                        <h3 class="fw-bold m-0 text-primary">
+                            <i class="fas fa-video me-2"></i>
+                            Telemedicine
+                        </h3>
+                    </div>
+                    <div class="card-toolbar">
+                        <a href="{% url 'telemedicine:schedule_consultation' %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-video me-2"></i>Schedule Consultation
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-6 g-xl-9">
+                        <!-- Active Consultations -->
+                        <div class="col-md-6">
+                            <div class="card card-flush h-md-50 mb-5 mb-xl-10 info-card">
                                 <div class="card-header pt-5">
                                     <div class="card-title d-flex flex-column">
-                                        <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-                                            <i class="ki-outline ki-calendar-add text-primary fs-2x me-2"></i>
-                                        </span>
+                                        <div class="d-flex align-items-center">
+                                            <span class="fs-4 fw-semibold text-gray-500 me-1 align-self-start">
+                                                <i class="fas fa-video text-success fs-2 me-2"></i>
+                                            </span>
+                                            <span class="fs-2hx fw-bold text-gray-900 me-2 lh-1 ls-n2">
+                                                {{ active_consultations.count|default:0 }}
+                                            </span>
+                                        </div>
+                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Active Consultations</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="col-md-6">
+                            <div class="card card-flush h-md-50 mb-xl-10 info-card">
+                                <div class="card-header pt-5">
+                                    <div class="card-title d-flex flex-column">
                                         <span class="text-gray-500 pt-1 fw-semibold fs-6">Quick Actions</span>
                                     </div>
                                 </div>
-                                <div class="card-body pt-2 pb-4 d-flex flex-column justify-content-center">
-                                    <div class="d-flex flex-column gap-3">
-                                        <a href="{% url 'core:appointment-create' %}" class="btn btn-primary btn-sm">
-                                            <i class="ki-outline ki-plus me-1"></i>
-                                            Book New Appointment
+                                <div class="card-body pt-0">
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'telemedicine:session_list' %}" class="btn btn-light-primary btn-sm mb-3">
+                                            <i class="fas fa-list me-2"></i>View All Sessions
                                         </a>
-                                        <a href="{% url 'core:doctor-list' %}" class="btn btn-light-primary btn-sm">
-                                            <i class="ki-outline ki-abstract-26 me-1"></i>
-                                            Find Doctors
-                                        </a>
-                                        <a href="{% url 'core:patient-detail' user.id %}" class="btn btn-light-primary btn-sm">
-                                            <i class="ki-outline ki-profile-user me-1"></i>
-                                            View My Profile
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 col-xl-4">
-                            <div class="card card-flush h-xl-100">
-                                <div class="card-header pt-5">
-                                    <div class="card-title d-flex flex-column">
-                                        <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-                                            <i class="ki-outline ki-notepad-bookmark text-success fs-2x me-2"></i>
-                                        </span>
-                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Health Records</span>
-                                    </div>
-                                </div>
-                                <div class="card-body pt-2 pb-4 d-flex flex-column justify-content-center">
-                                    <div class="d-flex flex-column gap-3">
-                                        <a href="#" class="btn btn-success btn-sm">
-                                            <i class="fas fa-pills me-1"></i>
-                                            My Medications
-                                        </a>
-                                        <a href="{% url 'report-list' %}" class="btn btn-light-success btn-sm">
-                                            <i class="fas fa-file-medical-alt me-1"></i>
-                                            Medical Reports
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 col-xl-4">
-                            <div class="card card-flush h-xl-100">
-                                <div class="card-header pt-5">
-                                    <div class="card-title d-flex flex-column">
-                                        <span class="fs-2hx fw-bold text-dark me-2 lh-1 ls-n2">
-                                            <i class="fas fa-video text-info fs-2x me-2"></i>
-                                        </span>
-                                        <span class="text-gray-500 pt-1 fw-semibold fs-6">Telemedicine</span>
-                                    </div>
-                                </div>
-                                <div class="card-body pt-2 pb-4 d-flex flex-column justify-content-center">
-                                    <div class="d-flex flex-column gap-3">
-                                        <a href="{% url 'telemedicine:list' %}" class="btn btn-info btn-sm">
-                                            <i class="fas fa-video me-1"></i>
-                                            Video Consultation
-                                        </a>
-                                        <a href="{% url 'core:ai_assistant' %}" class="btn btn-light-info btn-sm">
-                                            <i class="fas fa-brain me-1"></i>
-                                            AI Health Assistant
+                                        <a href="{% url 'telemedicine:schedule_consultation' %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-plus me-2"></i>New Consultation
                                         </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh vitals data every 30 seconds if on vitals section
+if (window.location.hash === '#vitals') {
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+}
+</script>
 {% endblock %}

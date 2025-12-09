@@ -1,0 +1,16 @@
+Watching for file changes with StatReloader
+/root/laso-wise/venv/lib/python3.12/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /root/laso-wise/staticfiles/
+  mw_instance = middleware(adapted_handler)
+"GET /telemedicine/jitsi/4/ HTTP/1.1" 302 0
+/root/laso-wise/laso/settings.py changed, reloading.
+Performing system checks...
+
+System check identified no issues (0 silenced).
+October 29, 2025 - 08:05:46
+Django version 5.1.7, using settings 'laso.settings'
+Starting development server at http://0.0.0.0:12001/
+Quit the server with CONTROL-C.
+
+Watching for file changes with StatReloader
+/root/laso-wise/venv/lib/python3.12/site-packages/django/core/handlers/base.py:61: UserWarning: No directory at: /root/laso-wise/staticfiles/
+  mw_instance = middleware(adapted_handler)

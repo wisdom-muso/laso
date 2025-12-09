@@ -1,0 +1,652 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Real-time Vitals Dashboard - Laso Healthcare{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vitals-dashboard {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .vital-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .vital-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .vital-value {
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 1rem 0;
+    }
+
+    .vital-label {
+        font-size: 1.1rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+
+    .vital-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .bp-normal { color: #28a745; }
+    .bp-elevated { color: #ffc107; }
+    .bp-high { color: #fd7e14; }
+    .bp-critical { color: #dc3545; }
+
+    .hr-normal { color: #28a745; }
+    .hr-high { color: #dc3545; }
+    .hr-low { color: #17a2b8; }
+
+    .connection-status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        color: white;
+        font-weight: 600;
+        z-index: 1000;
+    }
+
+    .connected { background: #28a745; }
+    .disconnected { background: #dc3545; }
+    .connecting { background: #ffc107; }
+
+    .vitals-chart {
+        height: 300px;
+        margin: 2rem 0;
+    }
+
+    .add-vital-form {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        border-color: #20c997;
+        box-shadow: 0 0 0 0.2rem rgba(32, 201, 151, 0.25);
+    }
+
+    .btn-add-vital {
+        background: linear-gradient(135deg, #20c997, #17a2b8);
+        border: none;
+        border-radius: 10px;
+        padding: 12px 30px;
+        color: white;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add-vital:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(32, 201, 151, 0.4);
+    }
+
+    .vitals-history {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .history-item {
+        border-left: 4px solid #20c997;
+        padding: 1rem;
+        margin: 1rem 0;
+        background: #f8f9fa;
+        border-radius: 0 10px 10px 0;
+    }
+
+    .timestamp {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vitals-dashboard">
+    <div class="container-fluid">
+        <!-- Connection Status -->
+        <div id="connectionStatus" class="connection-status connecting">
+            <i class="fas fa-wifi"></i> Connecting...
+        </div>
+
+        <!-- Page Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1 class="display-4 fw-bold text-primary">
+                    <i class="fas fa-heartbeat me-3"></i>
+                    Real-time Vitals Dashboard
+                </h1>
+                <p class="lead text-muted">Monitor your health vitals in real-time</p>
+            </div>
+        </div>
+
+        <!-- Add New Vital Form -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="add-vital-form">
+                    <h3 class="mb-4">
+                        <i class="fas fa-plus-circle me-2 text-primary"></i>
+                        Record New Vitals
+                    </h3>
+                    <form id="addVitalForm">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Systolic BP (mmHg)</label>
+                                    <input type="number" class="form-control" id="systolic_bp" min="50" max="300" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Diastolic BP (mmHg)</label>
+                                    <input type="number" class="form-control" id="diastolic_bp" min="30" max="200" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Heart Rate (bpm)</label>
+                                    <input type="number" class="form-control" id="heart_rate" min="30" max="250" required>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Temperature (°C)</label>
+                                    <input type="number" class="form-control" id="temperature" step="0.1" min="30" max="45">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Oxygen Saturation (%)</label>
+                                    <input type="number" class="form-control" id="oxygen_saturation" min="70" max="100">
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Weight (kg)</label>
+                                    <input type="number" class="form-control" id="weight" step="0.1" min="1" max="500">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Notes</label>
+                                    <input type="text" class="form-control" id="notes" placeholder="Any additional notes...">
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-add-vital">
+                            <i class="fas fa-save me-2"></i>Record Vitals
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Vitals Display -->
+        <div class="row mb-4" id="currentVitals">
+            <!-- Blood Pressure -->
+            <div class="col-lg-3 col-md-6">
+                <div class="vital-card text-center">
+                    <div class="vital-icon bp-normal">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="vital-label">Blood Pressure</div>
+                    <div class="vital-value bp-normal" id="bpValue">--/--</div>
+                    <div class="text-muted">mmHg</div>
+                    <div class="mt-2">
+                        <span class="badge bg-success" id="bpStatus">Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Heart Rate -->
+            <div class="col-lg-3 col-md-6">
+                <div class="vital-card text-center">
+                    <div class="vital-icon hr-normal pulse">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="vital-label">Heart Rate</div>
+                    <div class="vital-value hr-normal" id="hrValue">--</div>
+                    <div class="text-muted">bpm</div>
+                    <div class="mt-2">
+                        <span class="badge bg-success" id="hrStatus">Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temperature -->
+            <div class="col-lg-3 col-md-6">
+                <div class="vital-card text-center">
+                    <div class="vital-icon text-warning">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <div class="vital-label">Temperature</div>
+                    <div class="vital-value text-warning" id="tempValue">--</div>
+                    <div class="text-muted">°C</div>
+                    <div class="mt-2">
+                        <span class="badge bg-info" id="tempStatus">Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Oxygen Saturation -->
+            <div class="col-lg-3 col-md-6">
+                <div class="vital-card text-center">
+                    <div class="vital-icon text-info">
+                        <i class="fas fa-lungs"></i>
+                    </div>
+                    <div class="vital-label">Oxygen Saturation</div>
+                    <div class="vital-value text-info" id="o2Value">--%</div>
+                    <div class="text-muted">SpO2</div>
+                    <div class="mt-2">
+                        <span class="badge bg-info" id="o2Status">Normal</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vitals History -->
+        <div class="row">
+            <div class="col-12">
+                <div class="vitals-history">
+                    <h3 class="mb-4">
+                        <i class="fas fa-history me-2 text-primary"></i>
+                        Recent Vitals History
+                    </h3>
+                    <div id="vitalsHistory">
+                        <div class="text-center text-muted py-5">
+                            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                            <p>Loading vitals history...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class VitalsWebSocket {
+    constructor() {
+        this.socket = null;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
+        this.reconnectInterval = 3000;
+        this.connect();
+        this.setupEventListeners();
+    }
+
+    connect() {
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/vitals/`;
+        
+        this.updateConnectionStatus('connecting');
+        
+        this.socket = new WebSocket(wsUrl);
+        
+        this.socket.onopen = (event) => {
+            console.log('WebSocket connected');
+            this.updateConnectionStatus('connected');
+            this.reconnectAttempts = 0;
+        };
+        
+        this.socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            this.handleMessage(data);
+        };
+        
+        this.socket.onclose = (event) => {
+            console.log('WebSocket disconnected');
+            this.updateConnectionStatus('disconnected');
+            this.attemptReconnect();
+        };
+        
+        this.socket.onerror = (error) => {
+            console.error('WebSocket error:', error);
+            this.updateConnectionStatus('disconnected');
+        };
+    }
+
+    attemptReconnect() {
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            console.log(`Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
+            setTimeout(() => this.connect(), this.reconnectInterval);
+        }
+    }
+
+    updateConnectionStatus(status) {
+        const statusElement = document.getElementById('connectionStatus');
+        statusElement.className = `connection-status ${status}`;
+        
+        switch(status) {
+            case 'connected':
+                statusElement.innerHTML = '<i class="fas fa-wifi"></i> Connected';
+                break;
+            case 'connecting':
+                statusElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Connecting...';
+                break;
+            case 'disconnected':
+                statusElement.innerHTML = '<i class="fas fa-wifi"></i> Disconnected';
+                break;
+        }
+    }
+
+    handleMessage(data) {
+        switch(data.type) {
+            case 'vitals_data':
+                this.updateVitalsDisplay(data);
+                this.updateVitalsHistory(data.vitals);
+                break;
+            case 'new_vital':
+                this.addNewVitalToDisplay(data.vital);
+                break;
+            case 'error':
+                this.showError(data.message);
+                break;
+        }
+    }
+
+    updateVitalsDisplay(data) {
+        if (data.latest_vital) {
+            const vital = data.latest_vital;
+            
+            // Update Blood Pressure
+            document.getElementById('bpValue').textContent = vital.blood_pressure_display;
+            this.updateBPStatus(vital.systolic_bp, vital.diastolic_bp);
+            
+            // Update Heart Rate
+            document.getElementById('hrValue').textContent = vital.heart_rate;
+            this.updateHRStatus(vital.heart_rate);
+            
+            // Update Temperature
+            if (vital.temperature) {
+                document.getElementById('tempValue').textContent = vital.temperature.toFixed(1);
+                this.updateTempStatus(vital.temperature);
+            }
+            
+            // Update Oxygen Saturation
+            if (vital.oxygen_saturation) {
+                document.getElementById('o2Value').textContent = vital.oxygen_saturation + '%';
+                this.updateO2Status(vital.oxygen_saturation);
+            }
+        }
+    }
+
+    updateBPStatus(systolic, diastolic) {
+        const bpElement = document.getElementById('bpValue');
+        const statusElement = document.getElementById('bpStatus');
+        
+        let status = 'Normal';
+        let className = 'bp-normal';
+        let badgeClass = 'bg-success';
+        
+        if (systolic >= 180 || diastolic >= 120) {
+            status = 'Critical';
+            className = 'bp-critical';
+            badgeClass = 'bg-danger';
+        } else if (systolic >= 140 || diastolic >= 90) {
+            status = 'High';
+            className = 'bp-high';
+            badgeClass = 'bg-warning';
+        } else if (systolic >= 130 || diastolic >= 80) {
+            status = 'Elevated';
+            className = 'bp-elevated';
+            badgeClass = 'bg-warning';
+        }
+        
+        bpElement.className = `vital-value ${className}`;
+        statusElement.className = `badge ${badgeClass}`;
+        statusElement.textContent = status;
+    }
+
+    updateHRStatus(heartRate) {
+        const hrElement = document.getElementById('hrValue');
+        const statusElement = document.getElementById('hrStatus');
+        
+        let status = 'Normal';
+        let className = 'hr-normal';
+        let badgeClass = 'bg-success';
+        
+        if (heartRate > 100) {
+            status = 'High';
+            className = 'hr-high';
+            badgeClass = 'bg-warning';
+        } else if (heartRate < 60) {
+            status = 'Low';
+            className = 'hr-low';
+            badgeClass = 'bg-info';
+        }
+        
+        hrElement.className = `vital-value ${className}`;
+        statusElement.className = `badge ${badgeClass}`;
+        statusElement.textContent = status;
+    }
+
+    updateTempStatus(temperature) {
+        const statusElement = document.getElementById('tempStatus');
+        
+        let status = 'Normal';
+        let badgeClass = 'bg-success';
+        
+        if (temperature >= 38.0) {
+            status = 'Fever';
+            badgeClass = 'bg-danger';
+        } else if (temperature >= 37.5) {
+            status = 'Elevated';
+            badgeClass = 'bg-warning';
+        } else if (temperature < 36.0) {
+            status = 'Low';
+            badgeClass = 'bg-info';
+        }
+        
+        statusElement.className = `badge ${badgeClass}`;
+        statusElement.textContent = status;
+    }
+
+    updateO2Status(o2Sat) {
+        const statusElement = document.getElementById('o2Status');
+        
+        let status = 'Normal';
+        let badgeClass = 'bg-success';
+        
+        if (o2Sat < 90) {
+            status = 'Low';
+            badgeClass = 'bg-danger';
+        } else if (o2Sat < 95) {
+            status = 'Below Normal';
+            badgeClass = 'bg-warning';
+        }
+        
+        statusElement.className = `badge ${badgeClass}`;
+        statusElement.textContent = status;
+    }
+
+    updateVitalsHistory(vitals) {
+        const historyElement = document.getElementById('vitalsHistory');
+        
+        if (!vitals || vitals.length === 0) {
+            historyElement.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-heartbeat fa-2x mb-3"></i>
+                    <p>No vitals recorded yet</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let historyHTML = '';
+        vitals.forEach(vital => {
+            const date = new Date(vital.recorded_at);
+            historyHTML += `
+                <div class="history-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>BP:</strong> ${vital.blood_pressure_display} mmHg | 
+                            <strong>HR:</strong> ${vital.heart_rate} bpm
+                            ${vital.temperature ? ` | <strong>Temp:</strong> ${vital.temperature}°C` : ''}
+                            ${vital.oxygen_saturation ? ` | <strong>SpO2:</strong> ${vital.oxygen_saturation}%` : ''}
+                        </div>
+                        <div class="timestamp">
+                            ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                        </div>
+                    </div>
+                    ${vital.notes ? `<div class="mt-2 text-muted"><em>${vital.notes}</em></div>` : ''}
+                </div>
+            `;
+        });
+        
+        historyElement.innerHTML = historyHTML;
+    }
+
+    addNewVitalToDisplay(vital) {
+        // Update current display
+        this.updateVitalsDisplay({latest_vital: vital});
+        
+        // Add to history
+        const historyElement = document.getElementById('vitalsHistory');
+        const date = new Date(vital.recorded_at);
+        
+        const newItem = document.createElement('div');
+        newItem.className = 'history-item';
+        newItem.style.animation = 'fadeIn 0.5s ease-in';
+        newItem.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>BP:</strong> ${vital.blood_pressure_display} mmHg | 
+                    <strong>HR:</strong> ${vital.heart_rate} bpm
+                    ${vital.temperature ? ` | <strong>Temp:</strong> ${vital.temperature}°C` : ''}
+                    ${vital.oxygen_saturation ? ` | <strong>SpO2:</strong> ${vital.oxygen_saturation}%` : ''}
+                </div>
+                <div class="timestamp">
+                    ${date.toLocaleDateString()} ${date.toLocaleTimeString()}
+                </div>
+            </div>
+            ${vital.notes ? `<div class="mt-2 text-muted"><em>${vital.notes}</em></div>` : ''}
+        `;
+        
+        historyElement.insertBefore(newItem, historyElement.firstChild);
+    }
+
+    sendMessage(message) {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+            this.socket.send(JSON.stringify(message));
+        }
+    }
+
+    addVital(vitalData) {
+        this.sendMessage({
+            type: 'add_vital',
+            vital_data: vitalData
+        });
+    }
+
+    setupEventListeners() {
+        document.getElementById('addVitalForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const vitalData = {
+                systolic_bp: document.getElementById('systolic_bp').value,
+                diastolic_bp: document.getElementById('diastolic_bp').value,
+                heart_rate: document.getElementById('heart_rate').value,
+                temperature: document.getElementById('temperature').value || null,
+                oxygen_saturation: document.getElementById('oxygen_saturation').value || null,
+                weight: document.getElementById('weight').value || null,
+                notes: document.getElementById('notes').value || ''
+            };
+            
+            this.addVital(vitalData);
+            
+            // Reset form
+            e.target.reset();
+            
+            // Show success message
+            this.showSuccess('Vitals recorded successfully!');
+        });
+    }
+
+    showSuccess(message) {
+        // Create a temporary success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alert.style.top = '80px';
+        alert.style.right = '20px';
+        alert.style.zIndex = '1050';
+        alert.innerHTML = `
+            <i class="fas fa-check-circle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+
+    showError(message) {
+        // Create a temporary error message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+        alert.style.top = '80px';
+        alert.style.right = '20px';
+        alert.style.zIndex = '1050';
+        alert.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alert);
+        
+        setTimeout(() => {
+            alert.remove();
+        }, 5000);
+    }
+}
+
+// Initialize WebSocket connection when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    const vitalsWS = new VitalsWebSocket();
+});
+</script>
+{% endblock %}

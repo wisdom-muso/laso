@@ -1,0 +1,302 @@
+/* Complete Teal Theme Override for Laso Healthcare */
+
+:root {
+    /* Teal color palette */
+    --teal-50: #f0fdfa;
+    --teal-100: #ccfbf1;
+    --teal-200: #99f6e4;
+    --teal-300: #5eead4;
+    --teal-400: #2dd4bf;
+    --teal-500: #14b8a6;
+    --teal-600: #0d9488;
+    --teal-700: #0f766e;
+    --teal-800: #115e59;
+    --teal-900: #134e4a;
+    --teal-950: #042f2e;
+
+    /* Override primary colors */
+    --bs-primary: #14b8a6;
+    --bs-primary-rgb: 20, 184, 166;
+    --primary-color: #14b8a6;
+    
+    /* Override blue colors with teal */
+    --blue-50: var(--teal-50);
+    --blue-100: var(--teal-100);
+    --blue-200: var(--teal-200);
+    --blue-300: var(--teal-300);
+    --blue-400: var(--teal-400);
+    --blue-500: var(--teal-500);
+    --blue-600: var(--teal-600);
+    --blue-700: var(--teal-700);
+    --blue-800: var(--teal-800);
+    --blue-900: var(--teal-900);
+}
+
+/* Global overrides for blue to teal */
+.text-blue-500, .text-blue-600, .text-blue-700, .text-primary {
+    color: var(--teal-500) !important;
+}
+
+.bg-blue-500, .bg-blue-600, .bg-primary {
+    background-color: var(--teal-500) !important;
+}
+
+.border-blue-500, .border-primary {
+    border-color: var(--teal-500) !important;
+}
+
+/* Sidebar specific overrides */
+.sidebar .menu-icon,
+.app-sidebar .menu-icon,
+[data-kt-menu-trigger] .menu-icon {
+    color: var(--teal-700) !important;
+}
+
+.sidebar .menu-link:hover .menu-icon,
+.app-sidebar .menu-link:hover .menu-icon,
+[data-kt-menu-trigger]:hover .menu-icon {
+    color: var(--teal-500) !important;
+}
+
+.sidebar .menu-link.active .menu-icon,
+.app-sidebar .menu-link.active .menu-icon,
+[data-kt-menu-trigger].active .menu-icon {
+    color: var(--teal-500) !important;
+}
+
+/* Icon colors - ensure all icons use teal */
+.ki-duotone,
+.ki-solid,
+.ki-outline {
+    color: var(--teal-700) !important;
+}
+
+.menu-link:hover .ki-duotone,
+.menu-link:hover .ki-solid,
+.menu-link:hover .ki-outline {
+    color: var(--teal-500) !important;
+}
+
+.menu-link.active .ki-duotone,
+.menu-link.active .ki-solid,
+.menu-link.active .ki-outline {
+    color: var(--teal-500) !important;
+}
+
+/* Bootstrap button overrides */
+.btn-primary {
+    background-color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--teal-600) !important;
+    border-color: var(--teal-600) !important;
+    color: white !important;
+}
+
+.btn-outline-primary {
+    color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    background-color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+/* Links */
+a, .link-primary {
+    color: var(--teal-600) !important;
+}
+
+a:hover, .link-primary:hover {
+    color: var(--teal-700) !important;
+}
+
+/* Form controls */
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--teal-500) !important;
+    box-shadow: 0 0 0 0.25rem rgba(20, 184, 166, 0.25) !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+.badge-light-primary {
+    background-color: var(--teal-100) !important;
+    color: var(--teal-700) !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background-color: var(--teal-500) !important;
+}
+
+/* Navigation */
+.nav-pills .nav-link.active {
+    background-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+.nav-pills .nav-link:hover {
+    background-color: var(--teal-100) !important;
+    color: var(--teal-700) !important;
+}
+
+/* Dropdown */
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: var(--teal-50) !important;
+    color: var(--teal-700) !important;
+}
+
+.dropdown-item.active {
+    background-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+/* Tables */
+.table-striped > tbody > tr:nth-of-type(odd) > td {
+    background-color: var(--teal-50) !important;
+}
+
+.table-hover > tbody > tr:hover > td {
+    background-color: var(--teal-100) !important;
+}
+
+/* Cards */
+.card-header {
+    background-color: var(--teal-50) !important;
+    border-bottom: 1px solid var(--teal-200) !important;
+}
+
+/* Pagination */
+.page-link {
+    color: var(--teal-600) !important;
+}
+
+.page-link:hover {
+    color: var(--teal-700) !important;
+    background-color: var(--teal-100) !important;
+    border-color: var(--teal-300) !important;
+}
+
+.page-item.active .page-link {
+    background-color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+/* Alerts */
+.alert-primary {
+    background-color: var(--teal-100) !important;
+    border-color: var(--teal-300) !important;
+    color: var(--teal-800) !important;
+}
+
+/* Specific icon overrides for healthcare icons */
+.ki-stethoscope,
+.ki-medical-kit,
+.ki-heart,
+.ki-user-tick,
+.ki-calendar,
+.ki-notification,
+.ki-setting,
+.ki-home {
+    color: var(--teal-700) !important;
+}
+
+.menu-link:hover .ki-stethoscope,
+.menu-link:hover .ki-medical-kit,
+.menu-link:hover .ki-heart,
+.menu-link:hover .ki-user-tick,
+.menu-link:hover .ki-calendar,
+.menu-link:hover .ki-notification,
+.menu-link:hover .ki-setting,
+.menu-link:hover .ki-home {
+    color: var(--teal-500) !important;
+}
+
+/* Dashboard specific overrides */
+.dashboard-stat-icon {
+    color: var(--teal-500) !important;
+}
+
+.dashboard-card:hover {
+    border-color: var(--teal-300) !important;
+    box-shadow: 0 4px 15px rgba(20, 184, 166, 0.15) !important;
+}
+
+/* Telemedicine specific styling */
+.telemedicine-button {
+    background-color: var(--teal-500) !important;
+    border-color: var(--teal-500) !important;
+    color: white !important;
+}
+
+.telemedicine-button:hover {
+    background-color: var(--teal-600) !important;
+    border-color: var(--teal-600) !important;
+}
+
+/* Override any remaining blue colors */
+.text-blue, 
+.text-info,
+[class*="text-blue"] {
+    color: var(--teal-500) !important;
+}
+
+.bg-blue,
+.bg-info,
+[class*="bg-blue"] {
+    background-color: var(--teal-500) !important;
+}
+
+.border-blue,
+.border-info,
+[class*="border-blue"] {
+    border-color: var(--teal-500) !important;
+}
+
+/* Ensure focus states are teal */
+*:focus {
+    outline-color: var(--teal-500) !important;
+}
+
+/* Loading spinners */
+.spinner-border-primary {
+    border-color: var(--teal-500) !important;
+    border-right-color: transparent !important;
+}
+
+/* Toast notifications */
+.toast-header {
+    background-color: var(--teal-50) !important;
+    color: var(--teal-800) !important;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar-thumb {
+    background-color: var(--teal-300) !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--teal-400) !important;
+}

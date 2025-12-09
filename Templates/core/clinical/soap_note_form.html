@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}New SOAP Note - {{ patient.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    New SOAP Note
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted"><a href="{% url 'core:soap-note-list' patient.id %}"
+                            class="text-muted text-hover-primary">History</a></li>
+                    <li class="breadcrumb-item"><span class="bullet bg-gray-400 w-5px h-2px"></span></li>
+                    <li class="breadcrumb-item text-muted">{{ patient.get_full_name }}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+
+            <form method="post" class="form d-flex flex-column flex-lg-row">
+                {% csrf_token %}
+
+                <!-- Main Content -->
+                <div class="flex-lg-row-fluid ms-lg-7 ms-xl-10">
+                    <div class="card custom-card">
+                        <div class="card-header border-0 pt-5">
+                            <h3 class="card-title align-items-start flex-column">
+                                <span class="card-label fw-bold fs-3 mb-1">Clinical Documentation</span>
+                            </h3>
+                            <div class="card-toolbar">
+                                <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
+                                    <li class="nav-item">
+                                        <a class="nav-link active" data-bs-toggle="tab"
+                                            href="#kt_tab_subjective">Subjective</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_objective">Objective</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab"
+                                            href="#kt_tab_assessment">Assessment</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_plan">Plan</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="card-body">
+                            <div class="tab-content" id="myTabContent">
+
+                                <!-- SUBJECTIVE TAB -->
+                                <div class="tab-pane fade show active" id="kt_tab_subjective" role="tabpanel">
+                                    <div class="mb-5">
+                                        <label class="form-label required">Encounter Type</label>
+                                        {{ form.encounter_type }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label required">Chief Complaint</label>
+                                        {{ form.chief_complaint }}
+                                        <div class="text-muted fs-7">Patient's primary reason for visit.</div>
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">History of Present Illness (HPI)</label>
+                                        {{ form.history_of_present_illness }}
+                                    </div>
+                                    <div class="row mb-5">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Onset</label>
+                                            {{ form.symptom_onset }}
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Severity</label>
+                                            {{ form.symptom_severity }}
+                                        </div>
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Review of Systems (ROS)</label>
+                                        {{ form.review_of_systems }}
+                                    </div>
+                                </div>
+
+                                <!-- OBJECTIVE TAB -->
+                                <div class="tab-pane fade" id="kt_tab_objective" role="tabpanel">
+                                    <div class="mb-5">
+                                        <label class="form-label">Vital Signs Summary</label>
+                                        {{ form.vital_signs_summary }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Physical Examination Findings</label>
+                                        {{ form.physical_examination }}
+                                        <div class="text-muted fs-7">Detailed physical exam notes.</div>
+                                    </div>
+                                </div>
+
+                                <!-- ASSESSMENT TAB -->
+                                <div class="tab-pane fade" id="kt_tab_assessment" role="tabpanel">
+                                    <div class="mb-5">
+                                        <label class="form-label required">Primary Diagnosis</label>
+                                        {{ form.primary_diagnosis }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Differential Diagnoses</label>
+                                        {{ form.differential_diagnoses }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Clinical Impression</label>
+                                        {{ form.clinical_impression }}
+                                    </div>
+                                </div>
+
+                                <!-- PLAN TAB -->
+                                <div class="tab-pane fade" id="kt_tab_plan" role="tabpanel">
+                                    <div class="mb-5">
+                                        <label class="form-label required">Treatment Plan</label>
+                                        {{ form.treatment_plan }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Medications Prescribed</label>
+                                        {{ form.medications_prescribed }}
+                                    </div>
+                                    <div class="mb-5">
+                                        <label class="form-label">Follow-up Instructions</label>
+                                        {{ form.follow_up_instructions }}
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-end py-6 px-9">
+                            <a href="{% url 'core:soap-note-list' patient.id %}"
+                                class="btn btn-light btn-active-light-primary me-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Draft</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // Simple script to ensure textareas have form-control class
+    document.addEventListener("DOMContentLoaded", function () {
+        var inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(function (input) {
+            if (!input.classList.contains('form-control') && !input.classList.contains('form-select')) {
+                if (input.tagName === 'SELECT') input.classList.add('form-select');
+                else input.classList.add('form-control');
+            }
+            if (input.tagName === 'TEXTAREA') {
+                input.rows = 4;
+            }
+        });
+    });
+</script>
+{% endblock %}

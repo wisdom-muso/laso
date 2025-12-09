@@ -1,5 +1,4 @@
 from django.urls import path
-from django.views.generic import RedirectView
 from . import views
 
 app_name = 'telemedicine'
@@ -24,7 +23,6 @@ urlpatterns = [
     path('analytics/', views.TeleconsultationAnalyticsView.as_view(), name='analytics'),
     
     # WebRTC signaling (for future implementation)
-    path('session/<str:session_id>/signal/', views.webrtc_signal, name='webrtc_signal'),
 
     # Appointment views
     path('appointments/', views.TelemedicineAppointmentListView.as_view(), name='appointment-list'),
@@ -37,10 +35,16 @@ urlpatterns = [
     
     # Direct messaging URLs
     path('messages/', views.DoctorMessagingDashboardView.as_view(), name='doctor-messages'),
-    path('patient-messages/', RedirectView.as_view(pattern_name='dashboard', permanent=True), name='patient-messages'),
+    path('patient-messages/', views.PatientMessagingDashboardView.as_view(), name='patient-messages'),
     path('thread/<int:pk>/', views.MessageThreadDetailView.as_view(), name='message-thread'),
     path('api/send-message/', views.send_direct_message, name='send-direct-message'),
     path('api/threads/', views.get_message_threads, name='get-message-threads'),
     path('api/thread/<int:thread_id>/messages/', views.get_thread_messages, name='get-thread-messages'),
     path('api/start-call/', views.start_direct_call, name='start-direct-call'),
+
+    # Jitsi Meet Integration URLs
+    path('jitsi/<int:appointment_id>/', views.jitsi_telemedicine_room, name='jitsi-room'),
+    path('appointment/<int:appointment_id>/toggle-telemedicine/', views.toggle_telemedicine, name='toggle-telemedicine'),
+    path('appointment/<int:appointment_id>/check-status/', views.check_telemedicine_status, name='check-telemedicine-status'),
+    path('appointment/<int:appointment_id>/detail/', views.appointment_detail_with_telemedicine, name='appointment-detail-telemedicine'),
 ]

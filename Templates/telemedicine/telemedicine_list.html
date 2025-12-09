@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Telemedicine Dashboard - Laso Healthcare{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <!-- Toolbar -->
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    <i class="fas fa-video text-primary me-2"></i>Telemedicine Dashboard
+                </h1>
+                <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                    <li class="breadcrumb-item text-muted">
+                        <a href="{% url 'dashboard' %}" class="text-muted text-hover-primary">Home</a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <span class="bullet bg-gray-400 w-5px h-2px"></span>
+                    </li>
+                    <li class="breadcrumb-item text-muted">Telemedicine</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            
+            <!-- Stats Cards -->
+            <div class="row g-5 g-xl-8 mb-8">
+                <div class="col-xl-4">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="symbol symbol-50px me-3">
+                                    <div class="symbol-label bg-light-success">
+                                        <i class="fas fa-video text-success fs-2"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="text-gray-800 fw-bold fs-2">{{ available_now|length }}</span>
+                                    <div class="text-gray-400 fw-semibold">Available Now</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-4">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="symbol symbol-50px me-3">
+                                    <div class="symbol-label bg-light-warning">
+                                        <i class="fas fa-clock text-warning fs-2"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="text-gray-800 fw-bold fs-2">{{ upcoming_appointments|length }}</span>
+                                    <div class="text-gray-400 fw-semibold">Upcoming</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-xl-4">
+                    <div class="card card-flush h-xl-100">
+                        <div class="card-body d-flex flex-column justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <div class="symbol symbol-50px me-3">
+                                    <div class="symbol-label bg-light-primary">
+                                        <i class="fas fa-calendar-alt text-primary fs-2"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="text-gray-800 fw-bold fs-2">{{ total_appointments }}</span>
+                                    <div class="text-gray-400 fw-semibold">Total Appointments</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Available Now Section -->
+            {% if available_now %}
+            <div class="card mb-8">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="fas fa-video text-success fs-3 me-3"></i>
+                            <h3 class="fw-bold m-0">Available Now - Join Meeting</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="row g-6">
+                        {% for appointment in available_now %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="card card-flush border border-success">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center mb-4">
+                                        <div class="symbol symbol-40px me-3">
+                                            <div class="symbol-label bg-light-success">
+                                                <i class="fas fa-user-md text-success"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-1">
+                                                {% if is_doctor %}
+                                                    {{ appointment.patient.get_full_name }}
+                                                {% else %}
+                                                    Dr. {{ appointment.doctor.get_full_name }}
+                                                {% endif %}
+                                            </h6>
+                                            <div class="text-muted fs-7">{{ appointment.appointment_date }} at {{ appointment.appointment_time }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <div class="badge badge-light-success mb-2">
+                                            <i class="fas fa-circle text-success fs-8 me-1"></i>
+                                            Available Now
+                                        </div>
+                                        <p class="text-gray-600 fs-7 mb-0">{{ appointment.reason_for_visit|truncatechars:50 }}</p>
+                                    </div>
+                                    
+                                    <a href="{% url 'telemedicine:jitsi-room' appointment.id %}" 
+                                       class="btn btn-success btn-sm w-100">
+                                        <i class="fas fa-video me-2"></i>Join Meeting
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Upcoming Appointments Section -->
+            {% if upcoming_appointments %}
+            <div class="card">
+                <div class="card-header border-0 pt-6">
+                    <div class="card-title">
+                        <div class="d-flex align-items-center position-relative my-1">
+                            <i class="fas fa-clock text-warning fs-3 me-3"></i>
+                            <h3 class="fw-bold m-0">Upcoming Telemedicine Appointments</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="table-responsive">
+                        <table class="table table-row-dashed table-row-gray-300 gy-7">
+                            <thead>
+                                <tr class="fw-bold fs-6 text-gray-800">
+                                    <th>{% if is_doctor %}Patient{% else %}Doctor{% endif %}</th>
+                                    <th>Date & Time</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in upcoming_appointments %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="symbol symbol-40px me-3">
+                                                <div class="symbol-label bg-light-primary">
+                                                    <i class="fas fa-user text-primary"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold">
+                                                    {% if is_doctor %}
+                                                        {{ appointment.patient.get_full_name }}
+                                                    {% else %}
+                                                        Dr. {{ appointment.doctor.get_full_name }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-muted fs-7">
+                                                    {% if is_doctor %}
+                                                        {{ appointment.patient.email }}
+                                                    {% else %}
+                                                        {{ appointment.doctor.email }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">{{ appointment.appointment_date }}</div>
+                                        <div class="text-muted fs-7">{{ appointment.appointment_time }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="text-gray-600">{{ appointment.reason_for_visit|truncatechars:40 }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="badge badge-light-warning">
+                                            <i class="fas fa-clock me-1"></i>
+                                            {{ appointment.availability_status.message }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'telemedicine:appointment-detail-telemedicine' appointment.id %}" 
+                                           class="btn btn-light btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- No Appointments Message -->
+            {% if not available_now and not upcoming_appointments %}
+            <div class="card">
+                <div class="card-body text-center py-15">
+                    <div class="mb-7">
+                        <i class="fas fa-video text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    <h3 class="text-gray-800 fw-bold mb-4">No Telemedicine Appointments</h3>
+                    <p class="text-gray-600 fs-6 mb-8">
+                        {% if is_doctor %}
+                            You don't have any upcoming telemedicine appointments scheduled.
+                        {% else %}
+                            You don't have any upcoming telemedicine appointments. Contact your doctor to schedule a virtual consultation.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'appointments:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Schedule Appointment
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh the page every 30 seconds to update availability status
+setTimeout(function() {
+    location.reload();
+}, 30000);
+</script>
+{% endblock %}

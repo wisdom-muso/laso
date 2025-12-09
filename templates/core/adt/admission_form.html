@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Admission - Laso Healthcare{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-column-fluid">
+    <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+        <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+            <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">
+                    Patient Admission
+                </h1>
+            </div>
+        </div>
+    </div>
+
+    <div id="kt_app_content" class="app-content flex-column-fluid">
+        <div id="kt_app_content_container" class="app-container container-xxl">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <h2>Admit Patient to Hospital</h2>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <!-- Simplified form rendering for speed, assuming crispy forms or manual render in real usage -->
+                        <div class="row mb-5">
+                            <div class="col-md-12 mb-5">
+                                <label class="required form-label">Select Patient</label>
+                                {{ form.patient }}
+                                <!-- NOTE: In production, use Select2 for patient search -->
+                            </div>
+
+                            <div class="col-md-6 mb-5">
+                                <label class="required form-label">Admission Type</label>
+                                {{ form.admission_type }}
+                            </div>
+
+                            <div class="col-md-6 mb-5">
+                                <label class="required form-label">Assign Bed</label>
+                                {{ form.bed }}
+                            </div>
+
+                            <div class="col-md-12 mb-5">
+                                <label class="required form-label">Admission Diagnosis</label>
+                                {{ form.admission_diagnosis }}
+                            </div>
+
+                            <div class="col-md-12 mb-5">
+                                <label class="form-label">Notes</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url 'core:bed-dashboard' %}" class="btn btn-light me-3">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Process Admission</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

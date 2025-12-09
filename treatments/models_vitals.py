@@ -225,6 +225,20 @@ class VitalSign(models.Model):
             return 'crisis'
         return 'unknown'
     
+    def get_bp_risk_level(self):
+        """Get blood pressure risk level for display"""
+        bp_cat = self.bp_category
+        if bp_cat == 'crisis':
+            return 'critical'
+        elif bp_cat == 'stage2':
+            return 'high'
+        elif bp_cat == 'stage1':
+            return 'elevated'
+        elif bp_cat == 'elevated':
+            return 'elevated'
+        else:
+            return 'normal'
+    
     def calculate_risk_level(self):
         """Calculate overall risk level based on vital signs"""
         risk_factors = 0

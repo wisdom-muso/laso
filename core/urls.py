@@ -14,6 +14,13 @@ from .views_dashboard import (
     dashboard_analytics_api, patient_health_summary_api, recent_activity,
     export_analytics, enhanced_vitals_dashboard
 )
+from .views_saas import (
+    PatientOnboardingView, BedManagementDashboardView, 
+    WardDetailView, AdmissionCreateView
+)
+from .views_clinical import (
+    SOAPNoteListView, SOAPNoteCreateView, SOAPNoteDetailView
+)
 
 app_name = 'core'
 
@@ -85,4 +92,15 @@ urlpatterns = [
     
     # Admin Login Sessions
     path('admin/login-sessions/', views.LoginSessionListView.as_view(), name='login-sessions'),
+    
+    # SaaS / Enterprise Features
+    path('hospital/onboard-patient/', PatientOnboardingView.as_view(), name='saas-onboard-patient'),
+    path('hospital/beds/', BedManagementDashboardView.as_view(), name='bed-dashboard'),
+    path('hospital/beds/ward/<int:pk>/', WardDetailView.as_view(), name='ward-detail'),
+    path('hospital/admission/create/', AdmissionCreateView.as_view(), name='admission-create'),
+    
+    # Clinical Documentation (SOAP Notes)
+    path('patients/<int:patient_id>/soap-notes/', SOAPNoteListView.as_view(), name='soap-note-list'),
+    path('patients/<int:patient_id>/soap-notes/create/', SOAPNoteCreateView.as_view(), name='soap-note-create'),
+    path('soap-notes/<int:pk>/', SOAPNoteDetailView.as_view(), name='soap-note-detail'),
 ]

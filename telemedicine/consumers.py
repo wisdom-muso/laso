@@ -13,14 +13,7 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
-class ConsultationConsumer(AsyncWebsocketConsumer):
-    """
-    WebSocket consumer for telemedicine consultations
-    Handles WebRTC signaling and real-time chat
-    """
-    
-    async def connect(self):
-        self.consultation_id = self.scope['url_route']['kwargs']['consultation_id']
+# WebRTC Code Removed - Replaced by Jitsi Meet
         self.room_group_name = f'consultation_{self.consultation_id}'
         self.user = self.scope['user']
         

@@ -1,7 +1,7 @@
 {% extends 'core/base.html' %}
 {% load i18n %}
 
-{% block title %}{% translate "Tıbbi Görüntü Silme Onayı" %}{% endblock %}
+{% block title %}Medical Image Delete Confirmation{% endblock %}
 
 {% block content %}
 <div class="container py-4">
@@ -9,38 +9,38 @@
         <div class="col-md-6">
             <div class="card shadow-sm">
                 <div class="card-header bg-danger text-white">
-                    <h4 class="mb-0">{% translate "Tıbbi Görüntü Silme Onayı" %}</h4>
+                    <h4 class="mb-0">Medical Image Delete Confirmation</h4>
                 </div>
                 <div class="card-body">
-                    <p class="fs-5 mb-4">{% translate "Aşağıdaki tıbbi görüntüyü silmek istediğinize emin misiniz?" %}</p>
+                    <p class="fs-5 mb-4">Are you sure you want to delete the following medical image?</p>
                     
                     <div class="mb-4 d-flex justify-content-center">
                         <img src="{% url 'serve-medical-image' medical_image.pk %}" class="img-fluid rounded" alt="{{ medical_image.body_part }}" style="max-height: 200px;">
                     </div>
                     
                     <div class="alert alert-warning">
-                        <strong>{% translate "Image Information:" %}</strong><br>
+                        <strong>Image Information:</strong><br>
                         <ul class="mb-0">
-                            <li>{% translate "Image Type:" %} {{ medical_image.get_image_type_display }}</li>
-                            <li>{% translate "Body Part:" %} {{ medical_image.body_part }}</li>
-                            <li>{% translate "Taken Date:" %} {{ medical_image.taken_date|date:"d F Y" }}</li>
-                            <li>{% translate "Patient:" %} {{ medical_image.patient.get_full_name }}</li>
+                            <li>Image Type: {{ medical_image.get_image_type_display }}</li>
+                            <li>Body Part: {{ medical_image.body_part }}</li>
+                            <li>Taken Date: {{ medical_image.taken_date|date:"d F Y" }}</li>
+                            <li>Patient: {{ medical_image.patient.get_full_name }}</li>
                         </ul>
                     </div>
                     
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        {% translate "This action cannot be undone and all related data will be permanently deleted." %}
+                        This action cannot be undone and all related data will be permanently deleted.
                     </div>
                     
                     <form method="post">
                         {% csrf_token %}
                         <div class="d-flex justify-content-between mt-4">
                             <a href="{% url 'medical-image-detail' medical_image.id %}" class="btn btn-secondary">
-                                <i class="fas fa-times me-1"></i> {% translate "İptal" %}
+                                <i class="fas fa-times me-1"></i> Cancel
                             </a>
                             <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash me-1"></i> {% translate "Sil" %}
+                                <i class="fas fa-trash me-1"></i> Delete
                             </button>
                         </div>
                     </form>

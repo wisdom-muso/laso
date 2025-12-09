@@ -333,4 +333,29 @@ class ProfileSettingsForm(forms.ModelForm):
             theme_preference.dark_mode = (theme == 'dark')
             theme_preference.save()
         
-        return user 
+        return user
+
+class PatientOnboardingForm(forms.ModelForm):
+    """
+    Form for staff (Receptionist/Doctor) to onboard a new patient.
+    Difference from PatientRegistrationForm:
+    - No password required (auto-generated)
+    - Username auto-generated
+    """
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'email', 'date_of_birth', 'phone_number', 'gender', 'blood_type', 'address')
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('First Name')}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Last Name')}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': _('Email (Optional)')}),
+            'date_of_birth': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'phone_number': forms.TextInput(attrs={'class': 'form-control', 'placeholder': _('Phone Number')}),
+            'gender': forms.Select(attrs={'class': 'form-select'}),
+            'blood_type': forms.Select(attrs={'class': 'form-select'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        }
+        
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['email'].required = False

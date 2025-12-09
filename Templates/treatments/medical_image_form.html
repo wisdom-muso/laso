@@ -3,9 +3,9 @@
 
 {% block title %}
     {% if object %}
-        {% translate "Tıbbi Görüntü Düzenle" %}
+        Edit Medical Image
     {% else %}
-        {% translate "Yeni Tıbbi Görüntü Ekle" %}
+        Add New Medical Image
     {% endif %}
 {% endblock %}
 
@@ -17,9 +17,9 @@
                 <div class="card-header bg-light">
                     <h4 class="mb-0">
                         {% if object %}
-                            {% translate "Tıbbi Görüntü Düzenle" %}
+                            Edit Medical Image
                         {% else %}
-                            {% translate "Yeni Tıbbi Görüntü Ekle" %}
+                            Add New Medical Image
                         {% endif %}
                     </h4>
                 </div>
@@ -37,13 +37,13 @@
                         
                         {% if treatment %}
                             <div class="alert alert-info">
-                                {% translate "Bu görüntü" %} <strong>{{ treatment }}</strong> {% translate "tedavisi için ekleniyor." %}
+                                {% translate "This image is being added for treatment" %} <strong>{{ treatment }}</strong>.
                             </div>
                         {% endif %}
                         
                         {% if patient %}
                             <div class="alert alert-info">
-                                {% translate "Bu görüntü" %} <strong>{{ patient.get_full_name }}</strong> {% translate "için ekleniyor." %}
+                                {% translate "This image is being added for patient" %} <strong>{{ patient.get_full_name }}</strong>.
                             </div>
                         {% endif %}
                         
@@ -169,14 +169,14 @@
                         
                         <div class="d-flex justify-content-between mt-4">
                             <a href="javascript:history.back()" class="btn btn-outline-secondary">
-                                <i class="fas fa-arrow-left me-1"></i> {% translate "Geri" %}
+                                <i class="fas fa-arrow-left me-1"></i> {% translate "Back" %}
                             </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-1"></i>
                                 {% if object %}
-                                    {% translate "Güncelle" %}
+                                    {% translate "Update" %}
                                 {% else %}
-                                    {% translate "Kaydet" %}
+                                    {% translate "Save" %}
                                 {% endif %}
                             </button>
                         </div>

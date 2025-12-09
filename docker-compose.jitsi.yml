@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # Jitsi Meet Services
+  jitsi-web:
+    image: jitsi/web:stable
+    container_name: laso_jitsi_web
+    restart: unless-stopped
+    ports:
+      - "8443:443"
+      - "8080:80"
+    environment:
+      - ENABLE_LETSENCRYPT=0
+      - ENABLE_HTTP_REDIRECT=1
+      - DISABLE_HTTPS=0
+      - PUBLIC_URL=http://65.108.91.110:8080
+      - TZ=UTC
+      - JICOFO_AUTH_USER=focus
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_BOSH_URL_BASE=http://prosody:5280
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_GUEST_DOMAIN=guest.meet.jitsi
+      - XMPP_MUC_DOMAIN=muc.meet.jitsi
+      - XMPP_RECORDER_DOMAIN=recorder.meet.jitsi
+      - XMPP_PORT=5222
+    networks:
+      - jitsi_network
+    depends_on:
+      - prosody
+
+  prosody:
+    image: jitsi/prosody:stable
+    container_name: laso_jitsi_prosody
+    restart: unless-stopped
+    expose:
+      - "5222"
+      - "5347"
+      - "5280"
+    environment:
+      - AUTH_TYPE=internal
+      - ENABLE_AUTH=1
+      - ENABLE_GUESTS=1
+      - ENABLE_LOBBY=1
+      - ENABLE_XMPP_WEBSOCKET=1
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_GUEST_DOMAIN=guest.meet.jitsi
+      - XMPP_MUC_DOMAIN=muc.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - XMPP_RECORDER_DOMAIN=recorder.meet.jitsi
+      - JICOFO_COMPONENT_SECRET=jicofo_secret
+      - JICOFO_AUTH_USER=focus
+      - JICOFO_AUTH_PASSWORD=jicofo_password
+      - JVB_AUTH_USER=jvb
+      - JVB_AUTH_PASSWORD=jvb_password
+      - TZ=UTC
+    volumes:
+      - prosody_config:/config
+      - prosody_plugins_custom:/prosody-plugins-custom
+    networks:
+      - jitsi_network
+
+  jicofo:
+    image: jitsi/jicofo:stable
+    container_name: laso_jitsi_jicofo
+    restart: unless-stopped
+    environment:
+      - AUTH_TYPE=internal
+      - ENABLE_AUTH=1
+      - JICOFO_AUTH_USER=focus
+      - JICOFO_AUTH_PASSWORD=jicofo_password
+      - TZ=UTC
+      - XMPP_DOMAIN=meet.jitsi
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - XMPP_MUC_DOMAIN=muc.meet.jitsi
+      - XMPP_SERVER=prosody
+      - XMPP_PORT=5222
+    depends_on:
+      - prosody
+    networks:
+      - jitsi_network
+
+  jvb:
+    image: jitsi/jvb:stable
+    container_name: laso_jitsi_jvb
+    restart: unless-stopped
+    ports:
+      - "10000:10000/udp"
+      - "4443:4443"
+    environment:
+      - DOCKER_HOST_ADDRESS=65.108.91.110
+      - ENABLE_COLIBRI_WEBSOCKET=1
+      - JVB_AUTH_USER=jvb
+      - JVB_AUTH_PASSWORD=jvb_password
+      - JVB_BREWERY_MUC=jvbbrewery
+      - JVB_PORT=10000
+      - JVB_TCP_HARVESTER_DISABLED=true
+      - JVB_TCP_PORT=4443
+      - JVB_TCP_MAPPED_PORT=4443
+      - JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443
+      - XMPP_AUTH_DOMAIN=auth.meet.jitsi
+      - XMPP_INTERNAL_MUC_DOMAIN=internal-muc.meet.jitsi
+      - XMPP_SERVER=prosody
+      - XMPP_PORT=5222
+      - TZ=UTC
+    depends_on:
+      - prosody
+    networks:
+      - jitsi_network
+
+volumes:
+  prosody_config:
+    driver: local
+  prosody_plugins_custom:
+    driver: local
+
+networks:
+  jitsi_network:
+    driver: bridge

@@ -43,27 +43,32 @@ if not DEBUG:
         SECURE_HSTS_PRELOAD = True
         SECURE_HSTS_SECONDS = 31536000
         SECURE_SSL_REDIRECT = True
-        SESSION_COOKIE_SECURE = True
-        CSRF_COOKIE_SECURE = True
+        SESSION_COOKIE_SECURE = False
+        CSRF_COOKIE_SECURE = False
     else:
         # HTTP deployment settings
         SESSION_COOKIE_SECURE = False
         CSRF_COOKIE_SECURE = False
         SECURE_SSL_REDIRECT = False
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,65.108.91.110,host.docker.internal,*', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,65.108.91.110,host.docker.internal,testserver,*', cast=Csv())
 
 # CSRF trusted origins for secure forms
 CSRF_TRUSTED_ORIGINS = [
     'https://work-1-umvisjjquzesqvgd.prod-runtime.all-hands.dev',
     'https://work-2-umvisjjquzesqvgd.prod-runtime.all-hands.dev',
+    'https://work-1-qjprxjvjfnbamijp.prod-runtime.all-hands.dev',
+    'https://work-2-qjprxjvjfnbamijp.prod-runtime.all-hands.dev',
     'https://work-1-qeqkgzmqkfgvugnm.prod-runtime.all-hands.dev',
     'https://work-2-qeqkgzmqkfgvugnm.prod-runtime.all-hands.dev',
     'https://work-1-gxnncyfvalqqtzrm.prod-runtime.all-hands.dev',
     'https://work-2-gxnncyfvalqqtzrm.prod-runtime.all-hands.dev',
     'https://work-1-jwkooochxnsceltx.prod-runtime.all-hands.dev',
     'https://work-2-jwkooochxnsceltx.prod-runtime.all-hands.dev',
+    'https://work-1-kieydxmwfsesxari.prod-runtime.all-hands.dev',
+    'https://work-2-kieydxmwfsesxari.prod-runtime.all-hands.dev',
     'http://localhost:12000',
+    'http://65.108.91.110:3000',
     'http://localhost:12001',
     'http://127.0.0.1:12000',
     'http://127.0.0.1:12001',
@@ -258,8 +263,8 @@ SESSION_SAVE_EVERY_REQUEST = True  # Ensure session is saved on every request
 
 # Set secure cookies only for HTTPS
 if USE_HTTPS and not DEBUG:
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
@@ -603,8 +608,8 @@ LOGGING = {
 if not DEBUG:
     # Security settings for production
     SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
-    SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
-    CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
     
     # Performance settings
     CONN_MAX_AGE = config('DB_CONN_MAX_AGE', default=300, cast=int)
@@ -663,4 +668,29 @@ WEBRTC_CONFIG = {
         #     'credential': 'your-password'
         # }
     ]
+}
+
+# File Upload Settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024  # 3MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 3 * 1024 * 1024  # 3MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 1000
+
+# Jitsi Meet Configuration
+JITSI_DOMAIN = "65.108.91.110:8080"  # Can be changed to self-hosted domain later
+
+# Updated Telemedicine Settings with Jitsi integration
+TELEMEDICINE_SETTINGS = {
+    'MAX_SESSION_DURATION': 120,  # minutes
+    'DEFAULT_SESSION_DURATION': 30,  # minutes
+    'WEBRTC_STUN_SERVERS': [
+        'stun:stun.l.google.com:19302',
+        'stun:stun1.l.google.com:19302',
+    ],
+    'RECORDING_ENABLED': True,
+    'RECORDING_PATH': MEDIA_ROOT + '/recordings/',
+    'AUTO_END_SESSION_AFTER': 150,  # minutes
+    'JITSI_DOMAIN': JITSI_DOMAIN,
+    'CALL_WINDOW_BEFORE': 10,  # minutes before appointment
+    'CALL_WINDOW_AFTER': 30,   # minutes after appointment
+    'ENABLE_JITSI_INTEGRATION': True,
 }

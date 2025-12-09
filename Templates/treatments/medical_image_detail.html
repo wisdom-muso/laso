@@ -56,7 +56,7 @@
                     <div class="row mb-3">
                         <div class="col-md-5 fw-bold">{% translate "Patient" %}:</div>
                         <div class="col-md-7">
-                            <a href="{% url 'patient_detail' medical_image.patient.id %}">{{ medical_image.patient.get_full_name }}</a>
+                            <a href="{% url 'core:patient-detail' medical_image.patient.id %}">{{ medical_image.patient.get_full_name }}</a>
                         </div>
                     </div>
                     <div class="row mb-3">

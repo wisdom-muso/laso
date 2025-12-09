@@ -21,10 +21,19 @@ from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 
 # Import WebSocket routing
+websocket_urlpatterns = []
+
 try:
-    from telemedicine.routing import websocket_urlpatterns
+    from telemedicine.routing import websocket_urlpatterns as telemedicine_patterns
+    websocket_urlpatterns.extend(telemedicine_patterns)
 except ImportError:
-    websocket_urlpatterns = []
+    pass
+
+try:
+    from treatments.vitals_routing import websocket_urlpatterns as vitals_patterns
+    websocket_urlpatterns.extend(vitals_patterns)
+except ImportError:
+    pass
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,

@@ -63,6 +63,7 @@ services:
       - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_password}@redis:6379/0
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - HUGGINGFACE_API_KEY=${HUGGINGFACE_API_KEY}
+      - JITSI_MEET_URL=http://65.108.91.110:8080
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
@@ -181,6 +182,62 @@ services:
     networks:
       - laso_network
 
+  # Jitsi Meet Services
+  # Jitsi XMPP Server (Prosody)
+  jitsi-prosody:
+    image: jitsi/prosody:stable
+    container_name: laso_jitsi_prosody
+    restart: unless-stopped
+    env_file:
+      - .env.jitsi
+    networks:
+      - laso_network
+    volumes:
+      - jitsi_prosody_config:/config
+      - jitsi_prosody_plugins:/prosody-plugins-custom
+
+  # Jitsi Web Interface
+  jitsi-web:
+    image: jitsi/web:stable
+    container_name: laso_jitsi_web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+      - "8443:443"
+    env_file:
+      - .env.jitsi
+    networks:
+      - laso_network
+    depends_on:
+      - jitsi-prosody
+
+  # Jitsi Conference Focus
+  jitsi-jicofo:
+    image: jitsi/jicofo:stable
+    container_name: laso_jitsi_jicofo
+    restart: unless-stopped
+    env_file:
+      - .env.jitsi
+    networks:
+      - laso_network
+    depends_on:
+      - jitsi-prosody
+
+  # Jitsi Video Bridge
+  jitsi-jvb:
+    image: jitsi/jvb:stable
+    container_name: laso_jitsi_jvb
+    restart: unless-stopped
+    ports:
+      - "10000:10000/udp"
+      - "4443:4443"
+    env_file:
+      - .env.jitsi
+    networks:
+      - laso_network
+    depends_on:
+      - jitsi-prosody
+
 volumes:
   postgres_data:
     driver: local
@@ -191,6 +248,10 @@ volumes:
   media_volume:
     driver: local
   logs_volume:
+    driver: local
+  jitsi_prosody_config:
+    driver: local
+  jitsi_prosody_plugins:
     driver: local
 
 networks:

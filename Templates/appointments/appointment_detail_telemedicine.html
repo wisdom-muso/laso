@@ -1,0 +1,358 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "Appointment Details" %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .appointment-header {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .telemedicine-card {
+        border: 2px solid #e3f2fd;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+    
+    .telemedicine-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+    }
+    
+    .telemedicine-available {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        color: white;
+    }
+    
+    .telemedicine-waiting {
+        background: linear-gradient(135deg, #ff9800, #f57c00);
+        color: white;
+    }
+    
+    .telemedicine-unavailable {
+        background: linear-gradient(135deg, #f44336, #d32f2f);
+        color: white;
+    }
+    
+    .btn-join-call {
+        background: linear-gradient(135deg, #4caf50, #45a049);
+        border: none;
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-join-call:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        color: white;
+    }
+    
+    .btn-toggle-telemedicine {
+        background: linear-gradient(135deg, #2196f3, #1976d2);
+        border: none;
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 20px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-toggle-telemedicine:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.4);
+        color: white;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+        animation: pulse 2s infinite;
+    }
+    
+    .status-available { background-color: #4caf50; }
+    .status-waiting { background-color: #ff9800; }
+    .status-unavailable { background-color: #f44336; }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .countdown-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #ff9800;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="appointment-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h1 class="mb-0">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    {% trans "Appointment Details" %}
+                </h1>
+                <p class="mb-0 mt-2">{% trans "Manage your healthcare appointment" %}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Basic Appointment Information -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>{% trans "Appointment Information" %}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Patient" %}:</strong> {{ appointment.patient.get_full_name }}</p>
+                            <p><strong>{% trans "Doctor" %}:</strong> Dr. {{ appointment.doctor.get_full_name }}</p>
+                            <p><strong>{% trans "Status" %}:</strong> 
+                                <span class="badge bg-primary">{{ appointment.get_status_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Date" %}:</strong> {{ appointment.date|date:"F d, Y" }}</p>
+                            <p><strong>{% trans "Time" %}:</strong> {{ appointment.time|time:"H:i" }}</p>
+                            <p><strong>{% trans "Created" %}:</strong> {{ appointment.created_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                    {% if appointment.description %}
+                        <div class="mt-3">
+                            <strong>{% trans "Description" %}:</strong>
+                            <p class="mt-2">{{ appointment.description }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Telemedicine Section -->
+            <div class="card telemedicine-card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-video me-2"></i>{% trans "Telemedicine Video Consultation" %}
+                    </h5>
+                    {% if can_toggle_telemedicine %}
+                        <button class="btn btn-toggle-telemedicine btn-sm" onclick="toggleTelemedicine()">
+                            <i class="fas fa-toggle-{{ appointment.is_telemedicine|yesno:'on,off' }} me-2"></i>
+                            {{ appointment.is_telemedicine|yesno:'Disable,Enable' }}
+                        </button>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if appointment.is_telemedicine %}
+                        {% if is_telemedicine_available %}
+                            <div class="telemedicine-available p-4 rounded mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-video fa-3x mb-3"></i>
+                                    <h4>{% trans "Video Consultation Ready" %}</h4>
+                                    <p class="mb-4">{{ telemedicine_message }}</p>
+                                    <a href="{% url 'telemedicine:jitsi-room' appointment.id %}" class="btn-join-call">
+                                        <i class="fas fa-video me-2"></i>{% trans "Join Video Call" %}
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="telemedicine-waiting p-4 rounded mb-3">
+                                <div class="text-center">
+                                    <i class="fas fa-clock fa-3x mb-3"></i>
+                                    <h4>{% trans "Video Consultation Scheduled" %}</h4>
+                                    <p class="mb-3">{{ telemedicine_message }}</p>
+                                    
+                                    {% if time_until_available > 0 %}
+                                        <div class="countdown-display mb-3">
+                                            <span id="countdown-timer">{{ time_until_available }}</span> {% trans "minutes until available" %}
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <button class="btn btn-light" onclick="checkStatus()">
+                                        <i class="fas fa-sync-alt me-2"></i>{% trans "Check Status" %}
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        <!-- Telemedicine Instructions -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-lightbulb me-2"></i>{% trans "Preparation Tips" %}</h6>
+                            <ul class="mb-0">
+                                <li>{% trans "Test your camera and microphone beforehand" %}</li>
+                                <li>{% trans "Ensure you have a stable internet connection" %}</li>
+                                <li>{% trans "Find a quiet, well-lit location" %}</li>
+                                <li>{% trans "Have your medical documents and insurance information ready" %}</li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class="telemedicine-unavailable p-4 rounded text-center">
+                            <i class="fas fa-video-slash fa-3x mb-3"></i>
+                            <h4>{% trans "Telemedicine Not Enabled" %}</h4>
+                            <p class="mb-0">{% trans "This appointment is scheduled for in-person consultation only." %}</p>
+                            {% if can_toggle_telemedicine %}
+                                <p class="mt-2 text-light">{% trans "You can enable telemedicine using the toggle button above." %}</p>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>{% trans "Status" %}</h6>
+                </div>
+                <div class="card-body">
+                    {% if appointment.is_telemedicine %}
+                        {% if is_telemedicine_available %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="status-indicator status-available"></span>
+                                <strong class="text-success">{% trans "Ready for Video Call" %}</strong>
+                            </div>
+                        {% else %}
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="status-indicator status-waiting"></span>
+                                <strong class="text-warning">{% trans "Waiting for Call Window" %}</strong>
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="status-indicator status-unavailable"></span>
+                            <strong class="text-muted">{% trans "In-Person Only" %}</strong>
+                        </div>
+                    {% endif %}
+                    
+                    <small class="text-muted">
+                        {% trans "Last updated" %}: <span id="last-updated">{% now "H:i" %}</span>
+                    </small>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>{% trans "Quick Actions" %}</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if appointment.is_telemedicine and is_telemedicine_available %}
+                            <a href="{% url 'telemedicine:jitsi-room' appointment.id %}" class="btn btn-success">
+                                <i class="fas fa-video me-2"></i>{% trans "Join Video Call" %}
+                            </a>
+                        {% endif %}
+                        
+                        <button class="btn btn-outline-primary" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>{% trans "Print Details" %}
+                        </button>
+                        
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>{% trans "Back to Dashboard" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>{% trans "Need Help?" %}</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">
+                        {% trans "If you experience any technical issues with the video consultation, please contact our support team." %}
+                    </p>
+                    <button class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-headset me-2"></i>{% trans "Contact Support" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Toggle telemedicine functionality
+function toggleTelemedicine() {
+    fetch('{% url "telemedicine:toggle-telemedicine" appointment.id %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while updating telemedicine settings.');
+    });
+}
+
+// Check telemedicine status
+function checkStatus() {
+    fetch('{% url "telemedicine:check-telemedicine-status" appointment.id %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                if (data.is_available) {
+                    location.reload();
+                } else {
+                    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+                }
+            }
+        })
+        .catch(error => console.error('Status check error:', error));
+}
+
+// Auto-refresh countdown timer
+{% if appointment.is_telemedicine and not is_telemedicine_available and time_until_available > 0 %}
+let timeRemaining = {{ time_until_available }};
+const countdownElement = document.getElementById('countdown-timer');
+
+if (countdownElement) {
+    const countdownInterval = setInterval(function() {
+        timeRemaining--;
+        if (timeRemaining > 0) {
+            countdownElement.textContent = timeRemaining;
+        } else {
+            clearInterval(countdownInterval);
+            checkStatus();
+        }
+    }, 60000); // Update every minute
+}
+
+// Auto-check status every 30 seconds
+setInterval(checkStatus, 30000);
+{% endif %}
+</script>
+{% endblock %}

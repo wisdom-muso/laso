@@ -70,7 +70,7 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{% url 'patient-detail' test.patient.id %}" class="text-decoration-none">
+                                <a href="{% url 'core:patient-detail' test.patient.id %}" class="text-decoration-none">
                                     {{ test.patient.get_full_name }}
                                 </a>
                                 <br><small class="text-muted">ID: {{ test.patient.id }}</small>

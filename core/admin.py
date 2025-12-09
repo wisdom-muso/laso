@@ -9,6 +9,7 @@ from .models_statistics import DoctorPerformanceMetric
 from .models_communication import CommunicationNotification, Message, EmailTemplate
 from .models_notifications import Notification, NotificationType, NotificationTemplate, NotificationLog
 from .models_sessions import LoginSession
+from .models_organization import Hospital, Department
 from .admin_dashboard import admin_dashboard
 
 # Import AI admin configurations
@@ -83,3 +84,8 @@ admin.site.register(NotificationLog, NotificationLogAdmin)
 admin.site.register(DoctorPerformanceMetric, DoctorPerformanceMetricAdmin)
 admin.site.register(UserThemePreference, UserThemePreferenceAdmin)
 admin.site.register(LoginSession, LoginSessionAdmin)
+admin.site.register(Hospital)
+admin.site.register(Department)
+
+# Import Enterprise Features Admin
+from . import admin_enterprise
